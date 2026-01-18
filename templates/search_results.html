@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h4 class="mb-4">
+    {{ t.search_results_for }} “{{ query }}”
+</h4>
+
+{% if products %}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for product in products %}
+        {% include "product_card.html" %}
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No products found.</p>
+{% endif %}
+{% endblock %}

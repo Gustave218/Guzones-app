@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.checkout-wrapper {
+    max-width: 760px;
+    margin: auto;
+}
+
+.checkout-card {
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border: none;
+}
+
+.checkout-section {
+    border-radius: 14px;
+    background: #f9fafb;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.copy-btn {
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+
+.primary-btn {
+    border-radius: 14px;
+    font-weight: 600;
+    padding: 14px;
+}
+
+.secondary-btn {
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.value-box {
+    background: #eef4ff;
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.kes {
+    color: #2563eb;
+    font-weight: 700;
+}
+</style>
+
+<div class="checkout-wrapper">
+    <div class="checkout-card p-4">
+
+        <h3 class="fw-bold mb-1">{{ t.payment_information }}</h3>
+        <p class="text-muted mb-4">
+            Complete your order using M-Pesa Paybill
+        </p>
+
+        <!-- Order summary -->
+        <div class="value-box mb-4">
+            <div class="d-flex justify-content-between">
+                <span class="text-muted">Order Number</span>
+                <span class="badge bg-dark">{{ order_number }}</span>
+            </div>
+            <div class="d-flex justify-content-between mt-2">
+                <span class="text-muted">{{ t.total_amount }}</span>
+                <span class="kes fs-5">{{ total | amount }}</span>
+            </div>
+        </div>
+
+        <!-- MPESA -->
+        <div class="checkout-section">
+            <h5 class="fw-semibold mb-3">📲 M-Pesa Paybill</h5>
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>Paybill Number</span>
+                <div>
+                    <strong id="paybill">200999</strong>
+                    <button class="btn btn-outline-secondary copy-btn ms-2"
+                            onclick="copyText('paybill')">Copy</button>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>{{ t.account_number }}</span>
+                <div>
+                    <strong id="account">0001060123377</strong>
+                    <button class="btn btn-outline-secondary copy-btn ms-2"
+                            onclick="copyText('account')">Copy</button>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <span><span class="text-muted">{{ t.amount }}</span></span>
+                <strong class="kes">{{ total | amount }}</strong>
+            </div>
+
+            <div class="alert alert-warning mt-3 mb-0">
+                Go to <strong>M-Pesa</strong> → Pay Bill →  
+                Paybill <b>200999</b>,  
+                Account <b>0001060123377</b>,  
+                Amount <b>{{ total | amount }}</b>.
+            </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="checkout-section">
+            <h5 class="fw-semibold mb-3">📞 {{ t.contact_information }}</h5>
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>WhatsApp</span>
+                <div>
+                    <a href="https://wa.me/254710168286" target="_blank"
+                       class="text-decoration-none fw-semibold">
+                        +254710168286
+                    </a>
+                    <button class="btn btn-outline-secondary copy-btn ms-2"
+                            onclick="copyCustom('+254710168286')">Copy</button>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>Email</span>
+                <div>
+                    <strong id="email">info@guzones.com</strong>
+                    <button class="btn btn-outline-secondary copy-btn ms-2"
+                            onclick="copyText('email')">Copy</button>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <span class="text-muted">{{ t.delivery_address }}</span>
+                <div class="fw-semibold mt-1">
+                    {{ delivery_address }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <form method="POST">
+            <div class="d-grid gap-3">
+                <button type="submit"
+                        class="btn btn-primary primary-btn">
+                    ✔ {{ t.i_have_completed_payment }}
+                </button>
+
+                <a href="{{ url_for('home') }}"
+                   class="btn btn-light secondary-btn">
+                    Close
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+function copyText(id) {
+    navigator.clipboard.writeText(
+        document.getElementById(id).innerText
+    );
+}
+function copyCustom(text) {
+    navigator.clipboard.writeText(text);
+}
+</script>
+
+{% endblock %}

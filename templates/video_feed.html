@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ===== PAGE RESET ===== */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== CONSTANTS ===== */
+:root {
+    --navbar-height: 80px;
+    --appbar-height: 48px;
+}
+
+/* ===== TOP APP BAR ===== */
+.video-appbar {
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+    width: 100%;
+    height: var(--appbar-height);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.video-title {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* ===== VIDEO FEED ===== */
+.video-feed {
+    margin-top: calc(var(--navbar-height) + var(--appbar-height));
+    height: calc(
+        100dvh
+        - var(--navbar-height)
+        - var(--appbar-height)
+        - env(safe-area-inset-bottom)
+    );
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    background: black;
+}
+
+/* ===== EACH VIDEO ===== */
+.video-item {
+    height: calc(
+        100dvh
+        - var(--navbar-height)
+        - var(--appbar-height)
+        - env(safe-area-inset-bottom)
+    );
+    scroll-snap-align: start;
+    position: relative;
+    background: black;
+}
+
+/* ===== VIDEO ===== */
+.video-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ===== VIDEO TEXT ===== */
+.video-info {
+    position: absolute;
+    bottom: calc(100px + env(safe-area-inset-bottom));
+    left: 16px;
+    color: white;
+    z-index: 5;
+    max-width: 70%;
+}
+
+.video-info strong {
+    font-size: 16px;
+}
+
+.video-info small {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+/* ===== RIGHT ACTIONS ===== */
+.video-actions {
+    position: absolute;
+    right: 14px;
+    bottom: calc(160px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    z-index: 5;
+}
+
+.video-action {
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.video-action span {
+    display: block;
+    font-size: 12px;
+    margin-top: 4px;
+}
+</style>
+
+<!-- ===== APP BAR ===== -->
+<div class="video-appbar">
+    <span class="video-title">For You</span>
+</div>
+
+<!-- ===== VIDEO FEED ===== -->
+<div class="video-feed">
+
+{% for item in videos %}
+{% set v = item.video %}
+
+<div class="video-item">
+
+    <video playsinline muted loop>
+        <source src="{{ url_for('static', filename='uploads/videos/' ~ v.video_file) }}" type="video/mp4">
+    </video>
+
+    <div class="video-info">
+        <strong>{{ v.title }}</strong><br>
+        <small>{{ v.description }}</small>
+    </div>
+
+    <div class="video-actions">
+
+        <div class="video-action like-btn"
+     data-video-id="{{ v.id }}"
+     data-liked="{{ '1' if item.liked else '0' }}">
+    <span class="heart">
+        {% if item.liked %}❤️{% else %}🤍{% endif %}
+    </span>
+    <span class="like-count">{{ item.likes }}</span>
+    </div>
+
+        <a href="{{ url_for('user_chat') }}" class="video-action text-decoration-none">
+            💬
+            <span>Chat</span>
+        </a>
+
+        <div class="video-action" onclick="shareVideo()">
+            🔗
+            <span>Share</span>
+        </div>
+
+    </div>
+
+</div>
+{% endfor %}
+</div>
+
+<script>
+/* ===== AUTOPLAY / AUTOPAUSE ===== */
+const videos = document.querySelectorAll("video");
+
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        entry.isIntersecting ? entry.target.play() : entry.target.pause();
+    });
+}, { threshold: 0.6 });
+
+videos.forEach(v => observer.observe(v));
+
+function shareVideo() {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Video link copied!");
+}
+</script>
+
+<script>
+document.querySelectorAll(".like-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        const videoId = btn.dataset.videoId;
+        const heart = btn.querySelector(".heart");
+        const countEl = btn.querySelector(".like-count");
+
+        const response = await fetch(`/like-video/${videoId}`, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            heart.textContent = data.liked ? "❤️" : "🤍";
+            countEl.textContent = data.likes;
+        }
+    });
+});
+</script>
+
+{% endblock %}

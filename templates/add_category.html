@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+
+  <h3 class="mb-4">Add Category</h3>
+
+  <form method="POST">
+
+    <!-- CATEGORY NAME (EN) -->
+    <div class="mb-3">
+      <label class="form-label">Category Name (English)</label>
+      <input
+        type="text"
+        name="name_en"
+        class="form-control"
+        placeholder="e.g. Smartphones"
+        required
+      >
+    </div>
+
+    <!-- CATEGORY NAME (FR) -->
+    <div class="mb-3">
+      <label class="form-label">Category Name (French)</label>
+      <input
+        type="text"
+        name="name_fr"
+        class="form-control"
+        placeholder="e.g. Téléphones"
+        required
+      >
+    </div>
+
+    <!-- CATEGORY ICON -->
+    <div class="mb-4">
+      <label class="form-label">Category Icon</label>
+      <select name="icon" class="form-select" required>
+        <option value="">-- Select an icon --</option>
+        <option value="📱">📱 Smartphones</option>
+        <option value="💻">💻 Laptops</option>
+        <option value="🖥️">🖥️ Computers</option>
+        <option value="🎧">🎧 Accessories</option>
+        <option value="👕">👕 Fashion</option>
+        <option value="👟">👟 Shoes</option>
+        <option value="⌚">⌚ Watches</option>
+        <option value="📺">📺 Electronics</option>
+        <option value="🏠">🏠 Home</option>
+        <option value="🛒">🛒 General</option>
+      </select>
+
+      <small class="text-muted">
+        This icon will appear as a stylish round image on the home page.
+      </small>
+    </div>
+
+    <!-- SUBMIT -->
+    <button class="btn btn-dark w-100 rounded-pill">
+      ➕ Add Category
+    </button>
+
+  </form>
+
+</div>
+{% endblock %}

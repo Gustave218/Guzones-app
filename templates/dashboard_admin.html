@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ===== ADMIN MOBILE FIX ===== */
+
+/* Mobile admin menu */
+.admin-menu {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-menu a {
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 14px;
+}
+
+/* Desktop sidebar */
+@media (min-width: 768px) {
+    .admin-menu {
+        display: block;
+        overflow: visible;
+    }
+
+    .admin-menu a {
+        border-radius: 0;
+        display: block;
+        margin-bottom: 5px;
+    }
+}
+
+/* Table scroll on mobile */
+.table-responsive {
+    border-radius: 12px;
+    overflow-x: auto;
+}
+
+/* Action buttons spacing */
+.action-buttons a,
+.action-buttons button {
+    margin-bottom: 6px;
+    width: 100%;
+}
+@media (min-width: 768px) {
+    .action-buttons a,
+    .action-buttons button {
+        width: auto;
+        margin-bottom: 0;
+    }
+}
+</style>
+
+<h2 class="mb-4">Admin Dashboard</h2>
+
+<div class="row">
+
+    <!-- SIDEBAR / MENU -->
+    <div class="col-md-3 mb-3">
+
+        <div class="card mt-4">
+    <div class="card-body">
+        <h5 class="fw-bold">📢 Publicity / Banners</h5>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('admin_banners') }}" class="btn btn-outline-dark">
+                Manage Banners
+            </a>
+
+            <a href="{{ url_for('admin_add_banner') }}" class="btn btn-dark">
+                ➕ Add Banner
+            </a>
+        </div>
+    </div>
+</div>
+
+        <div class="admin-menu list-group">
+
+            <a href="{{ url_for('admin_users') }}"
+                 class="list-group-item list-group-item-action">
+            👥 Users
+            </a>
+
+            <a href="{{ url_for('admin_videos') }}"
+                class="list-group-item list-group-item-action">
+            🎬 Videos
+            </a>
+
+            <a href="{{ url_for('admin_chats') }}"
+                 class="list-group-item list-group-item-action">
+                💬 Chats
+            </a>
+
+            <a href="{{ url_for('admin_notifications') }}"
+               class="btn btn-primary">
+                🔔 Notifications
+            </a>
+
+            <a href="{{ url_for('add_product') }}"
+               class="list-group-item list-group-item-action">
+                ➕ Add Product
+            </a>
+
+            <a href="{{ url_for('add_category') }}"
+               class="list-group-item list-group-item-action">
+                📂 Add Category
+            </a>
+
+            <a href="{{ url_for('admin_orders') }}"
+               class="list-group-item list-group-item-action">
+                📦 Orders
+            </a>
+
+            <a href="{{ url_for('admin_dashboard') }}"
+               class="list-group-item list-group-item-action active">
+                🛒 All Products
+            </a>
+
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="col-md-9">
+
+        <!-- PRODUCTS -->
+        <h3 class="mb-3">All Products</h3>
+
+        {% if products %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th style="min-width: 160px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.id }}</td>
+                        <td>{{ product.name_en }}</td>
+                        <td>KES {{ product.price }}</td>
+                        <td>{{ product.category.name_en if product.category else "—" }}</td>
+                        <td class="action-buttons">
+                            <a href="{{ url_for('edit_product', product_id=product.id) }}"
+                               class="btn btn-sm btn-warning">
+                                Edit
+                            </a>
+                            <a href="{{ url_for('delete_product', product_id=product.id) }}"
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('Delete this product?');">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="alert alert-info">
+                No products found. Start by adding one.
+            </div>
+        {% endif %}
+
+        <!-- CATEGORIES -->
+        <h3 class="mt-5 mb-3">Categories</h3>
+
+        {% if categories %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name (EN)</th>
+                        <th>Name (FR)</th>
+                        <th>Icon</th>
+                        <th style="min-width: 180px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>{{ category.id }}</td>
+                        <td>{{ category.name_en }}</td>
+                        <td>{{ category.name_fr }}</td>
+                        <td class="fs-4">{{ category.icon or "—" }}</td>
+                        <td class="action-buttons">
+                            <a href="{{ url_for('edit_category', category_id=category.id) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                Edit
+                            </a>
+
+                            <form method="POST"
+                                  action="{{ url_for('delete_category', category_id=category.id) }}"
+                                  class="d-inline">
+                                <button class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Delete this category?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="alert alert-info">
+                No categories found.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

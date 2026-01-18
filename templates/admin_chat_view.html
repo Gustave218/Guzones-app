@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h5 class="mb-3">Chat with {{ user.name }}</h5>
+
+<div class="chat-box mb-3" style="max-height:60vh;overflow-y:auto;">
+    {% for msg in messages %}
+        <div class="message {% if msg.sender == 'admin' %}admin-msg{% else %}user-msg{% endif %}">
+            {{ msg.message }}
+        </div>
+    {% endfor %}
+</div>
+
+<form method="POST" class="d-flex gap-2">
+    <input type="text" name="message" class="form-control" placeholder="Reply…" required>
+    <button class="btn btn-dark">Send</button>
+</form>
+
+{% endblock %}

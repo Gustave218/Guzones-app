@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ===== FULLSCREEN FEED ===== */
+.video-feed {
+    height: calc(100vh - 80px);
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    background: black;
+}
+
+/* ===== EACH VIDEO ===== */
+.video-item {
+    height: 100vh;
+    scroll-snap-align: start;
+    position: relative;
+    background: black;
+}
+
+/* ===== VIDEO ===== */
+.video-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: black;
+}
+
+/* ===== VIDEO TEXT ===== */
+.video-info {
+    position: absolute;
+    bottom: 100px;
+    left: 16px;
+    color: white;
+    z-index: 5;
+    max-width: 70%;
+}
+
+.video-info strong {
+    font-size: 16px;
+}
+
+.video-info small {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+/* ===== RIGHT ACTIONS ===== */
+.video-actions {
+    position: absolute;
+    right: 14px;
+    bottom: 200px; /* icons pushed UP */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    z-index: 5;
+}
+
+.video-action {
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.video-action span {
+    display: block;
+    font-size: 12px;
+    margin-top: 4px;
+    opacity: 0.9;
+}
+</style>
+
+<div class="video-feed">
+
+{% for item in videos %}
+{% set v = item.video %}
+
+<div class="video-item">
+
+    <!-- VIDEO -->
+    <video playsinline loop controls>
+        <source src="{{ url_for('static', filename='uploads/videos/' ~ v.video_file) }}" type="video/mp4">
+    </video>
+
+    <!-- VIDEO TEXT -->
+    <div class="video-info">
+        <strong>{{ v.title }}</strong><br>
+        <small>{{ v.description }}</small>
+    </div>
+
+    <!-- ACTION ICONS -->
+    <div class="video-actions">
+
+        <!-- LIKE -->
+        <form method="POST" action="{{ url_for('like_video', video_id=v.id) }}">
+            <button class="video-action bg-transparent border-0">
+                {% if item.liked %}
+                    ❤️
+                {% else %}
+                    🤍
+                {% endif %}
+                <span>{{ item.likes }}</span>
+            </button>
+        </form>
+
+        <!-- CHAT (COMMENT ICON) -->
+        <a href="{{ url_for('user_chat') }}"
+           class="video-action text-decoration-none">
+            💬
+            <span>Chat</span>
+        </a>
+
+        <!-- SHARE -->
+        <div class="video-action" onclick="shareVideo()">
+            🔗
+            <span>Share</span>
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<script>
+/* AUTOPLAY ON SCROLL */
+const videos = document.querySelectorAll("video");
+
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.play();
+        } else {
+            entry.target.pause();
+        }
+    });
+}, { threshold: 0.6 });
+
+videos.forEach(v => observer.observe(v));
+
+/* SHARE */
+function shareVideo() {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Video link copied!");
+}
+</script>
+
+{% endblock %}

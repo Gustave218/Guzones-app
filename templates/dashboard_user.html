@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-4">{{ t.my_orders }}</h3>
+
+{% for order in orders %}
+<div class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <strong>Order #{{ order.id }}</strong>
+            <span class="badge bg-info">{{ order.delivery_status }}</span>
+        </div>
+
+        <p class="mt-2">
+            <strong>Total:</strong> {{ order.total_amount | amount }}<br>   
+            <strong>Payment:</strong>
+            <span class="badge bg-{{ 'success' if order.payment_status == 'paid' else 'warning' }}">
+                {{ order.payment_status }}
+            </span>
+        </p>
+
+        <small class="text-muted">
+            Ordered on {{ order.created_at.strftime("%d %b %Y") }}
+        </small>
+    </div>
+</div>
+{% else %}
+<p>{{ t.you_have_not_placed_any_orders_yet }}</p>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="mb-4">➕ Add Publicity Banner</h4>
+
+<form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
+
+    <!-- Main image (required) -->
+    <label class="form-label">Main Banner Image</label>
+    <input type="file" name="image" class="form-control mb-3" required>
+
+    <!-- Extra images (optional) -->
+    <label class="form-label">Extra Images (optional)</label>
+    <input type="file" name="images" class="form-control mb-3" multiple>
+
+    <input type="text" name="title" class="form-control mb-3" placeholder="Title" required>
+
+    <textarea name="description" class="form-control mb-3" placeholder="Description"></textarea>
+
+    <input type="text" name="contact" class="form-control mb-3" placeholder="Contact info (optional)">
+    <input type="text"
+       name="tel"
+       class="form-control mb-3"
+       placeholder="Phone number for calls (e.g. 0710603313)">
+
+       <div class="mb-3">
+    <label class="form-label">CTA Button Text</label>
+    <input
+        type="text"
+        name="cta_text"
+        class="form-control"
+        placeholder="e.g. Contact Us, Buy Now, Book Now"
+        value="CONTACT US"
+    >
+
+    <div class="mb-3">
+    <label class="form-label">CTA Button Color</label>
+    <input
+        type="color"
+        name="cta_color"
+        class="form-control form-control-color"
+        value="#ff3b3b"
+    >
+    <small class="text-muted">
+        Choose CTA button color for this banner
+    </small>
+</div>
+
+    <small class="text-muted">
+        Text shown on the banner button
+    </small>
+    </div>
+
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" name="is_active" checked>
+        <label class="form-check-label">Active</label>
+    </div>
+
+    <button class="btn btn-dark w-100">Add Banner</button>
+</form>
+
+{% endblock %}

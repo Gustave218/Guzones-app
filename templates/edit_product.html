@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Edit Product</h3>
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label>Name (English)</label>
+        <input type="text" name="name_en" class="form-control" value="{{ product.name_en }}" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Name (French)</label>
+        <input type="text" name="name_fr" class="form-control" value="{{ product.name_fr }}" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Description (English)</label>
+        <textarea name="description_en" class="form-control" required>{{ product.description_en }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Description (French)</label>
+        <textarea name="description_fr" class="form-control" required>{{ product.description_fr }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Price</label>
+        <input type="number" step="0.01" name="price" class="form-control" value="{{ product.price }}" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Category</label>
+        <select name="category_id" class="form-select" required>
+            {% for category in categories %}
+                <option value="{{ category.id }}"
+                    {% if category.id == product.category_id %}selected{% endif %}>
+                    {{ category.name_en }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Image</label>
+        <input type="file" name="image" class="form-control">
+    </div>
+
+    <button class="btn btn-primary">Update Product</button>
+</form>
+{% endblock %}

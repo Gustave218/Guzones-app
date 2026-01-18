@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container" style="max-width: 600px;">
+
+    <h3 class="mb-4">🔔 Admin Notifications</h3>
+
+    <form method="POST" class="card p-3 shadow-sm border-0">
+
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input
+                type="text"
+                name="title"
+                class="form-control"
+                placeholder="e.g. Order Update"
+                required
+            >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea
+                name="message"
+                class="form-control"
+                rows="4"
+                placeholder="Write notification message..."
+                required
+            ></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Send to</label>
+            <select name="user_id" class="form-select">
+                <option value="all">📢 All Users</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}">
+                        👤 {{ user.name }} ({{ user.whatsapp }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button class="btn btn-dark w-100">
+            Send Notification
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

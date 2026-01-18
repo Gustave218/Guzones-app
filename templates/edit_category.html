@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3 class="mb-4">Edit Category</h3>
+
+<form method="POST">
+    <div class="mb-3">
+        <label class="form-label">Category Name (English)</label>
+        <input type="text"
+               name="name_en"
+               class="form-control"
+               value="{{ category.name_en }}"
+               required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Category Name (French)</label>
+        <input type="text"
+               name="name_fr"
+               class="form-control"
+               value="{{ category.name_fr }}"
+               required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Category Icon</label>
+        <select name="icon" class="form-select" required>
+            <option value="🛍️" {{ "selected" if category.icon == "🛍️" }}>🛍️ Fashion</option>
+            <option value="📱" {{ "selected" if category.icon == "📱" }}>📱 Mobile</option>
+            <option value="💻" {{ "selected" if category.icon == "💻" }}>💻 Laptop</option>
+            <option value="🖥️" {{ "selected" if category.icon == "🖥️" }}>🖥️ PC</option>
+            <option value="🎧" {{ "selected" if category.icon == "🎧" }}>🎧 Electronics</option>
+            <option value="🏠" {{ "selected" if category.icon == "🏠" }}>🏠 Home</option>
+        </select>
+    </div>
+
+    <button class="btn btn-primary">
+        💾 Save Changes
+    </button>
+
+    <a href="{{ url_for('admin_dashboard') }}"
+       class="btn btn-secondary ms-2">
+        Cancel
+    </a>
+</form>
+{% endblock %}

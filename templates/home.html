@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if banners %}
+<div class="promo-fullbleed">
+    <div id="promoCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+    {% for b in banners %}
+    <button type="button"
+            data-bs-target="#promoCarousel"
+            data-bs-slide-to="{{ loop.index0 }}"
+            class="{% if loop.first %}active{% endif %}"
+            aria-current="{% if loop.first %}true{% endif %}">
+    </button>
+    {% endfor %}
+</div>
+        <div class="carousel-inner">
+
+            {% for b in banners %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+    <div class="banner-wrapper position-relative">
+
+        <a href="{{ url_for('banner_detail', banner_id=b.id) }}">
+            <img src="{{ url_for('static', filename='uploads/' + b.image) }}"
+                 class="d-block w-100 banner-img">
+        </a>
+
+        <!-- CTA -->
+        <a href="{{ url_for('banner_detail', banner_id=b.id) }}"
+   class="banner-cta"
+   style="background-color: {{ b.cta_color }};">
+    {{ b.cta_text }}
+</a>
+
+    </div>
+</div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ===================== -->
+<!-- SHOP BY CATEGORY -->
+<!-- ===================== -->
+
+
+<div class="row row-cols-3 row-cols-md-5 g-3 g-md-4 mb-4">
+  {% for category in categories %}
+    <div class="col text-center">
+
+      <a href="{{ url_for('products_by_category', category_id=category.id) }}"
+         class="category-card">
+
+        <div class="category-circle">
+          <span>{{ category.icon }}</span>
+        </div>
+
+        <div class="category-label">
+          {{ category.name_fr if g.lang == 'fr' else category.name_en }}
+        </div>
+
+      </a>
+
+    </div>
+  {% endfor %}
+</div>
+
+<!-- ===================== -->
+<!-- NEW ARRIVALS -->
+<!-- ===================== -->
+<h4 class="mb-3">{{ t.new_arrivals }}</h4>
+
+<div class="horizontal-wrapper scroll-container">
+  <button class="scroll-btn left scroll-left" onclick="scrollRow(this, -1)">❮</button>
+
+  <div class="horizontal-scroll">
+    {% for product in new_arrivals %}
+    {% set rating = (product.id % 3) + 3 %}
+    {% set reviews = (product.id * 13) % 240 + 12 %}
+
+      <div class="card horizontal-card product-card position-relative">
+
+        <!-- ❤️ Wishlist -->
+        <span class="wishlist-btn">♡</span>
+
+        <a href="{{ url_for('product_detail', product_id=product.id) }}"
+           class="text-decoration-none text-dark">
+
+          <div class="position-relative">
+            <span class="product-badge badge-new">{{ t.new }}</span>
+
+            {% if product.images %}
+              <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+                   loading="lazy">
+            {% else %}
+              <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+                   loading="lazy">
+            {% endif %}
+          </div>
+
+          <div class="card-body p-2">
+
+            <!-- ⭐ Rating -->
+            <div class="rating">
+              {% for i in range(rating) %}★{% endfor %}
+              {% for i in range(5-rating) %}☆{% endfor %}
+              <span>({{ reviews }})</span>
+            </div>
+
+            <h6 class="product-title">
+              {{ product.name_fr if g.lang == 'fr' else product.name_en }}
+            </h6>
+
+            <strong class="text-danger">
+              {{ product | money }}
+            </strong>
+
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <button class="scroll-btn right scroll-right" onclick="scrollRow(this, 1)">❯</button>
+</div>
+
+<!-- ===================== -->
+<!-- TRENDING -->
+<!-- ===================== -->
+<h4 class="mb-3 mt-4">🔥 {{ t.trending }}</h4>
+
+<div class="horizontal-wrapper scroll-container">
+  <button class="scroll-btn left scroll-left" onclick="scrollRow(this, -1)">❮</button>
+
+  <div class="horizontal-scroll">
+    {% for product in trending %}
+    {% set rating = (product.id % 3) + 3 %}
+    {% set reviews = (product.id * 13) % 240 + 12 %}
+
+      <div class="card horizontal-card product-card position-relative">
+
+        <span class="wishlist-btn">♡</span>
+
+        <a href="{{ url_for('product_detail', product_id=product.id) }}"
+           class="text-decoration-none text-dark">
+
+          <div class="position-relative">
+            <span class="product-badge badge-trending">{{ t.trending }}</span>
+
+            {% if product.images %}
+              <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+                   loading="lazy">
+            {% else %}
+              <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+                   loading="lazy">
+            {% endif %}
+          </div>
+
+          <div class="card-body p-2">
+            <div class="rating">
+              {% for i in range(rating) %}★{% endfor %}
+              {% for i in range(5-rating) %}☆{% endfor %}
+              <span>({{ reviews }})</span>
+            </div>
+
+            <h6 class="product-title">
+              {{ product.name_fr if g.lang == 'fr' else product.name_en }}
+            </h6>
+
+            <strong class="text-danger">
+              {{ product | money }}
+            </strong>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <button class="scroll-btn right scroll-right" onclick="scrollRow(this, 1)">❯</button>
+</div>
+
+<!-- ===================== -->
+<!-- ON SALE -->
+<!-- ===================== -->
+<h4 class="mb-3 mt-4 text-danger"> {{ t.on_sale }}</h4>
+
+<div class="horizontal-wrapper scroll-container">
+  <button class="scroll-btn left scroll-left" onclick="scrollRow(this, -1)">❮</button>
+
+  <div class="horizontal-scroll">
+    {% for product in on_sale %}
+    {% set rating = (product.id % 3) + 3 %}
+    {% set reviews = (product.id * 13) % 240 + 12 %}
+
+      <div class="card horizontal-card product-card position-relative">
+
+        <span class="wishlist-btn">♡</span>
+
+        <a href="{{ url_for('product_detail', product_id=product.id) }}"
+           class="text-decoration-none text-dark">
+
+          <div class="position-relative">
+            <span class="product-badge badge-sale">{{ t.on_sale }}</span>
+
+            {% if product.images %}
+              <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+                   loading="lazy">
+            {% else %}
+              <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+                   loading="lazy">
+            {% endif %}
+          </div>
+
+          <div class="card-body p-2">
+            <div class="rating">
+              {% for i in range(rating) %}★{% endfor %}
+              {% for i in range(5-rating) %}☆{% endfor %}
+              <span>({{ reviews }})</span>
+            </div>
+
+            <h6 class="product-title">
+              {{ product.name_fr if g.lang == 'fr' else product.name_en }}
+            </h6>
+
+            <strong class="text-danger">
+             {{ product | money }}
+            </strong>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <button class="scroll-btn right scroll-right" onclick="scrollRow(this, 1)">❯</button>
+</div>
+
+<!-- ===================== -->
+<!-- FOR YOU (FEATURED GRID) -->
+<!-- ===================== -->
+<h3 class="mt-5 mb-4">{{ t.for_you }}</h3>
+
+<div class="row row-cols-2 row-cols-md-3 g-4">
+  {% for product in products %}
+  {% set rating = (product.id % 3) + 3 %}
+  {% set reviews = (product.id * 13) % 240 + 12 %}
+
+    <div class="col">
+  <div class="card h-100 product-card for-you-card position-relative">
+
+    <span class="wishlist-btn">♡</span>
+
+    <a href="{{ url_for('product_detail', product_id=product.id) }}"
+       class="text-decoration-none">
+
+      {% if product.images %}
+        <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+             loading="lazy"
+             class="card-img-top for-you-img">
+      {% else %}
+        <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+             loading="lazy"
+             class="card-img-top for-you-img">
+      {% endif %}
+
+      <!-- PRICE OVER IMAGE -->
+      <span class="for-you-price">
+        {{ product | money }}
+      </span>
+
+    </a>
+
+  </div>
+</div>
+  {% endfor %}
+</div>
+
+{% endblock %}

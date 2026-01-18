@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-3">🎬 Upload Videos</h3>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="POST" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label class="form-label">Video Title (optional)</label>
+        <input type="text" name="title" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Select Video (MP4)</label>
+        <input type="file"
+               name="video"
+               class="form-control"
+               accept="video/mp4"
+               required>
+      </div>
+
+      <button class="btn btn-dark w-100">
+        ⬆ Upload Video
+      </button>
+    </form>
+  </div>
+</div>
+
+<h4 class="mb-3">📂 Uploaded Videos</h4>
+
+{% if videos %}
+  <div class="row g-3">
+    {% for video in videos %}
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <video controls
+                 class="w-100"
+                 style="max-height:300px;object-fit:cover;">
+            <source src="{{ url_for('static',
+              filename='uploads/videos/' + video.video_file) }}"
+              type="video/mp4">
+          </video>
+
+          <div class="card-body">
+            <strong>{{ video.title or "No title" }}</strong>
+
+            <form method="POST"
+                  action="{{ url_for('delete_video', video_id=video.id) }}"
+                  class="mt-2">
+              <button class="btn btn-sm btn-danger w-100"
+                      onclick="return confirm('Delete this video?')">
+                🗑 Delete
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info">
+    No videos uploaded yet.
+  </div>
+{% endif %}
+
+{% endblock %}

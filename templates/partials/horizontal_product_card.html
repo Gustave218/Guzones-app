@@ -1,0 +1,34 @@
+<div class="horizontal-card">
+  <a href="{{ url_for('product_detail', product_id=product.id) }}"
+     class="text-decoration-none text-dark">
+
+    <div class="card border-0 shadow-sm">
+
+      <div class="position-relative">
+        {% if product.is_new %}
+          <span class="badge bg-success position-absolute top-0 start-0 m-2">NEW</span>
+        {% elif product.is_trending %}
+          <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">HOT</span>
+        {% elif product.is_on_sale %}
+          <span class="badge bg-danger position-absolute top-0 start-0 m-2">SALE</span>
+        {% endif %}
+
+        {% if product.images %}
+          <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+               style="width:140px;height:140px;object-fit:cover;">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+               style="width:140px;height:140px;object-fit:cover;">
+        {% endif %}
+      </div>
+
+      <div class="p-2">
+        <small class="d-block text-truncate">{{ product.name_en }}</small>
+        <strong class="text-danger">
+          {{ product | money }}
+        </strong>
+      </div>
+
+    </div>
+  </a>
+</div>

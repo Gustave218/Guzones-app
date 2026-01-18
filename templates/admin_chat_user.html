@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h5>Chat with {{ user.name }}</h5>
+
+<div class="border rounded p-3 mb-3" style="height:60vh; overflow-y:auto;">
+  {% for m in messages %}
+    <div class="mb-2 text-{{ 'end' if m.sender == 'admin' else 'start' }}">
+      <span class="badge bg-{{ 'dark' if m.sender == 'admin' else 'primary' }}">
+        {{ m.message }}
+      </span>
+    </div>
+  {% endfor %}
+</div>
+
+<form method="POST">
+  <div class="input-group">
+    <input name="message" class="form-control" placeholder="Reply..." required>
+    <button class="btn btn-success">Send</button>
+  </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-3">
+
+  <div class="container mt-3">
+
+  <!-- MAIN IMAGE -->
+  {% if banner.image %}
+  <div class="banner-main-image">
+    <img
+  id="mainBannerImage"
+  src="{{ url_for('static', filename='uploads/' ~ banner.image) }}"
+  alt="{{ banner.title }}"
+  onclick="openImageZoom(this.src)">>
+  </div>
+  {% endif %}
+
+  <!-- THUMBNAILS -->
+  {% if banner.images %}
+  <div class="banner-thumbnails">
+    
+    <!-- Main image thumbnail -->
+    <img
+      src="{{ url_for('static', filename='uploads/' ~ banner.image) }}"
+      onclick="changeBannerImage(this.src)"
+      class="active-thumb">
+
+    <!-- Extra images -->
+    {% for img in banner.images %}
+    <img
+      src="{{ url_for('static', filename='uploads/' ~ img.image) }}"
+      onclick="changeBannerImage(this.src)">
+    {% endfor %}
+
+  </div>
+  {% endif %}
+
+  <div class="banner-card title">{{ banner.title }}</div>
+
+
+  <div class="banner-card description">{{ banner.description }}</div>
+
+  {% if banner.tel %}
+<a href="tel:{{ banner.tel }}"
+   class="contact-seller-btn call">
+   📞 Contact for Price
+</a>
+{% endif %}
+
+  {% if banner.contact %}
+  <a href="https://wa.me/{{ banner.contact }}?text=Hello%20I%20saw%20your%20banner%20on%20Guzones.%20I%20am%20interested%20in%20{{ banner.title }}"
+     target="_blank"
+     class="contact-seller-btn">
+      Contact Us on WhatsApp
+  </a>
+
+  <!-- IMAGE ZOOM OVERLAY -->
+<div id="imageZoomOverlay" class="image-zoom-overlay" onclick="closeImageZoom()">
+  <img id="zoomedImage">
+  <span class="close-zoom">✕</span>
+</div>
+  {% endif %}
+
+</div>
+
+<script>
+function changeBannerImage(src, el) {
+  const mainImage = document.getElementById("mainBannerImage");
+  mainImage.src = src;
+
+  document.querySelectorAll(".banner-thumbnails img").forEach(img => {
+    img.classList.remove("active-thumb");
+  });
+
+  el.classList.add("active-thumb");
+}
+
+function openImageZoom(src) {
+  const overlay = document.getElementById("imageZoomOverlay");
+  const zoomedImg = document.getElementById("zoomedImage");
+
+  zoomedImg.src = src;
+  overlay.style.display = "flex";
+}
+
+function closeImageZoom() {
+  document.getElementById("imageZoomOverlay").style.display = "none";
+}
+</script>
+{% endblock %}

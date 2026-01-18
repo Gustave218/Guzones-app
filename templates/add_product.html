@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add New Product</h2>
+<form action="{{ url_for('add_product') }}" method="POST" enctype="multipart/form-data" class="p-4 bg-light rounded shadow-sm">
+    <div class="mb-3">
+        <label class="form-label">Name (EN)</label>
+        <input type="text" name="name_en" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Name (FR)</label>
+        <input type="text" name="name_fr" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Description (EN)</label>
+        <textarea name="description_en" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Description (FR)</label>
+        <textarea name="description_fr" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Price</label>
+        <input type="number" name="price" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Category</label>
+        <select name="category_id" class="form-select" required>
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name_en }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+    <label class="form-label">Shop / Company Name</label>
+    <input type="text"
+           name="shop_name"
+           class="form-control"
+           placeholder="e.g. Guzones Ltd">
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Shop Location</label>
+    <input type="text"
+           name="shop_location"
+           class="form-control"
+           placeholder="e.g. Kenya, Nairobi">
+</div>
+    <div class="mb-3">
+        <label>Product Images</label>
+<input type="file" name="images" multiple class="form-control">
+
+    </div>
+    <button type="submit" class="btn btn-success w-100">Add Product</button>
+
+    <div class="row mt-3">
+  <div class="col-md-3 form-check">
+    <input type="checkbox" class="form-check-input" name="is_new">
+    <label class="form-check-label">New Arrival</label>
+  </div>
+
+  <div class="col-md-3 form-check">
+    <input type="checkbox" class="form-check-input" name="is_trending">
+    <label class="form-check-label">Trending</label>
+  </div>
+
+  <div class="col-md-3 form-check">
+    <input type="checkbox" class="form-check-input" name="is_featured">
+    <label class="form-check-label">Featured</label>
+  </div>
+
+  <div class="col-md-3 form-check">
+    <input type="checkbox" class="form-check-input" name="is_on_sale">
+    <label class="form-check-label">On Sale</label>
+  </div>
+</div>
+
+<label class="form-label">Currency</label>
+<select name="currency" class="form-select">
+  <option value="USD" selected>USD – US Dollar</option>
+  <option value="KES">KES – Kenya Shilling</option>
+  <option value="CDF">CDF – Congolese Franc</option>
+  <option value="EUR">EUR – Euro</option>
+  <option value="TZS">TZS – Tanzania Shilling</option>
+  <option value="UGX">UGX – Uganda Shilling</option>
+</select>
+</form>
+{% endblock %}

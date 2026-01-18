@@ -1,0 +1,44 @@
+<div class="col">
+  <div class="card h-100 shadow-sm border-0">
+
+    <a href="{{ url_for('product_detail', product_id=product.id) }}"
+       class="text-decoration-none text-dark">
+
+      <div class="position-relative">
+        {% if product.is_new %}
+          <span class="product-badge badge-new">NEW</span>
+        {% elif product.is_trending %}
+          <span class="product-badge badge-trending">TRENDING</span>
+        {% elif product.is_on_sale %}
+          <span class="product-badge badge-sale">SALE</span>
+        {% elif product.is_featured %}
+          <span class="product-badge badge-featured">FEATURED</span>
+        {% endif %}
+
+        {% if product.images %}
+          <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+               class="card-img-top"
+               style="height:220px; object-fit:cover;">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+               class="card-img-top"
+               style="height:220px; object-fit:cover;">
+        {% endif %}
+      </div>
+
+      <div class="card-body">
+        <h5 class="card-title mb-1">{{ product.name_en }}</h5>
+        <p class="fw-bold mb-0">{{ product | money }}</p>
+      </div>
+    </a>
+
+    <div class="px-3 pb-3">
+      <a href="{{ url_for('add_to_cart', product_id=product.id) }}"
+         class="btn btn-dark w-100 rounded-pill">
+        🛒 Add to Cart
+      </a>
+    </div>
+
+  </div>
+</div>
+

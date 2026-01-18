@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="cart-container">
+    <h3 class="mb-4">
+        {{ t.cart }} ({{ cart_count }} items)
+    </h3>
+
+    {% if items %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            {% for item in items %}
+            <div class="cart-item">
+
+                <!-- Product image -->
+                {% if item.product.images and item.product.images|length > 0 %}
+                    <img src="{{ url_for('static', filename='uploads/' + item.product.images[0].image) }}">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/placeholder.png') }}">
+                {% endif %}
+
+                <!-- Product info -->
+                <div class="flex-grow-1">
+                    <h5 class="mb-1">{{ item.product.name_en }}</h5>
+                    <div class="text-muted cart-item-price">
+                        {{ item.product | money }} × {{ item.quantity }}
+                    </div>
+                </div>
+
+                <!-- Quantity controls -->
+                <div class="cart-actions">
+                    <a href="{{ url_for('cart_decrease', product_id=item.product.id) }}"
+                       class="btn btn-outline-dark btn-sm">−</a>
+
+                    <span class="fw-bold">{{ item.quantity }}</span>
+
+                    <a href="{{ url_for('cart_increase', product_id=item.product.id) }}"
+                       class="btn btn-outline-dark btn-sm">+</a>
+                </div>
+
+                <!-- Remove -->
+                <a href="{{ url_for('cart_remove', product_id=item.product.id) }}"
+                   class="btn btn-outline-danger btn-sm ms-2"
+                   onclick="return confirm('{{ t.remove_item_confirm }}')">
+                    🗑
+                </a>
+            </div>
+            {% endfor %}
+
+            <hr>
+
+           <!-- SUMMARY -->
+<div class="cart-summary">
+    <div class="d-flex justify-content-between mb-2">
+        <span>{{ t.total }}</span>
+        <strong>{{ total_usd | amount }}</strong>
+    </div>
+
+    <a href="{{ url_for('checkout') }}"
+       class="btn btn-dark btn-checkout mt-3">
+        {{ t.proceed_to_checkout }}
+    </a>
+</div>
+
+        </div>
+    </div>
+    {% else %}
+        <div class="alert alert-info">
+            {{ t.your_cart_is_empty }}
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ===== PRODUCT PAGE ===== */
+.product-wrapper {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px 12px;
+}
+
+.product-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.08);
+    padding: 20px;
+}
+
+/* IMAGE */
+.image-container {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.main-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* SHOP + LOCATION OVER IMAGE */
+.shop-location {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    display: flex;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 6px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    z-index: 5;
+}
+
+.shop-location span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #444;
+    font-weight: 500;
+}
+
+.shop-location i {
+    font-size: 13px;
+    color: #1a73e8;
+}
+
+/* THUMBS */
+.thumb-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.thumb-row img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.thumb-row img:hover {
+    border-color: #000;
+}
+
+/* INFO */
+.product-title {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.product-price {
+    font-size: 24px;
+    font-weight: 800;
+    color: #198754;
+    margin: 12px 0;
+}
+
+.product-meta {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 14px;
+}
+
+/* QTY */
+.qty-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.qty-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #000;
+    color: #fff;
+    border: none;
+    font-size: 20px;
+}
+
+.qty-input {
+    width: 60px;
+    height: 42px;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.btn-cart {
+    background: #000;
+    color: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 17px;
+    font-weight: 600;
+    width: 100%;
+}
+
+/* GALLERY OVERLAY */
+.gallery-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.gallery-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 14px;
+}
+
+.gallery-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: none;
+    font-size: 28px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.gallery-prev { left: 20px; }
+.gallery-next { right: 20px; }
+
+.gallery-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    color: #fff;
+    background: none;
+    border: none;
+}
+
+.product-divider {
+    border: none;
+    height: 1px;
+    background: #eee;
+    margin: 12px 0 18px;
+}
+.related-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 60px 0 20px; /* 👈 more breathing room */
+    color: #111;
+}
+
+</style>
+
+<div class="product-wrapper">
+<div class="product-card">
+<div class="row g-4">
+
+<!-- LEFT -->
+<div class="col-md-6">
+
+<div class="image-container" onclick="openGallery(0)">
+
+<!-- SHOP + LOCATION -->
+{% if product.shop_name or product.shop_location %}
+<div class="shop-location">
+    {% if product.shop_name %}
+    <span>
+        <i class="bi bi-shop"></i>
+        {{ product.shop_name }}
+    </span>
+    {% endif %}
+    {% if product.shop_location %}
+    <span>
+        <i class="bi bi-geo-alt"></i>
+        {{ product.shop_location }}
+    </span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if product.images %}
+<img id="mainImage"
+     src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+     class="main-image">
+{% else %}
+<img id="mainImage"
+     src="{{ url_for('static', filename='images/placeholder.png') }}"
+     class="main-image">
+{% endif %}
+</div>
+
+<div class="thumb-row">
+{% for img in product.images %}
+<img src="{{ url_for('static', filename='uploads/' + img.image) }}"
+     onclick="openGallery('{{ loop.index0 }}')">
+{% endfor %}
+</div>
+
+</div>
+
+<!-- RIGHT -->
+<div class="col-md-6">
+
+<h1 class="product-title mb-2">
+{{ product.name_fr if g.lang == 'fr' else product.name_en }}
+</h1>
+
+<div class="product-price mb-3">
+{{ product | money }}
+<hr class="product-divider">
+</div>
+
+<div class="product-meta">
+Guzones.com • Shipping all over Africa
+</div>
+
+<p class="text-muted">
+{{ product.description_fr if g.lang == 'fr' else product.description_en }}
+</p>
+
+<div class="qty-box">
+<button class="qty-btn" onclick="changeQty(-1)">−</button>
+<input id="qty" class="qty-input" value="1" readonly>
+<button class="qty-btn" onclick="changeQty(1)">+</button>
+</div>
+
+<a id="cartLink"
+   href="{{ url_for('add_to_cart', product_id=product.id) }}"
+   class="btn btn-cart">
+{{ t.add_to_cart }}
+</a>
+
+</div>
+</div>
+</div>
+
+<!-- RELATED PRODUCTS -->
+{% if related_products %}
+<h3 class="related-title mt-5">
+{{ t.customers_also_viewed }}
+</h3>
+
+<div class="row g-4 related-row">
+{% for p in related_products %}
+
+{% set reviews = range(12, 240)|random %}
+{% set rating = range(3, 5)|random %}
+{% set has_discount = range(1, 4)|random == 1 %}
+
+<div class="col-6 col-md-4 col-lg-3">
+
+<a href="{{ url_for('product_detail', product_id=p.id) }}"
+   class="related-link">
+
+    <div class="related-card">
+
+        {% if has_discount %}
+        <span class="discount-badge">-20%</span>
+        {% endif %}
+
+        <span class="wishlist-btn">♡</span>
+
+        <div class="related-img">
+            <img src="{{ url_for('static', filename='uploads/' + p.images[0].image) if p.images else url_for('static', filename='images/placeholder.png') }}"
+                 alt="{{ p.name_fr if g.lang == 'fr' else p.name_en }}">
+        </div>
+
+        <div class="related-body">
+
+            <div class="rating">
+                {% for i in range(rating) %}★{% endfor %}
+                {% for i in range(5-rating) %}☆{% endfor %}
+                <span>({{ reviews }})</span>
+            </div>
+
+            <p class="related-name">
+                {{ p.name_fr if g.lang == 'fr' else p.name_en }}
+            </p>
+
+            <p class="related-price">
+                {{ p | money }}
+            </p>
+
+        </div>
+    </div>
+
+</a>
+
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+<!-- IMAGE DATA -->
+<script type="application/json" id="productImages">
+[
+{% for img in product.images %}
+"{{ url_for('static', filename='uploads/' + img.image) }}"{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+</script>
+
+<div id="galleryOverlay" class="gallery-overlay">
+<button class="gallery-close" onclick="closeGallery()">×</button>
+<button class="gallery-btn gallery-prev" onclick="prevImage()">‹</button>
+<img id="galleryImage">
+<button class="gallery-btn gallery-next" onclick="nextImage()">›</button>
+</div>
+
+<script>
+const images = JSON.parse(
+  document.getElementById("productImages").textContent
+);
+
+let currentIndex = 0;
+
+function openGallery(index) {
+  currentIndex = index;
+  document.getElementById("galleryImage").src = images[currentIndex];
+  document.getElementById("galleryOverlay").style.display = "flex";
+}
+
+function closeGallery() {
+  document.getElementById("galleryOverlay").style.display = "none";
+}
+
+function nextImage() {
+  currentIndex = (currentIndex + 1) % images.length;
+  document.getElementById("galleryImage").src = images[currentIndex];
+}
+
+function prevImage() {
+  currentIndex = (currentIndex - 1 + images.length) % images.length;
+  document.getElementById("galleryImage").src = images[currentIndex];
+}
+
+function changeQty(val) {
+  let qty = document.getElementById("qty");
+  let newVal = Math.max(1, parseInt(qty.value) + val);
+  qty.value = newVal;
+
+  document.getElementById("cartLink").href =
+    "{{ url_for('add_to_cart', product_id=product.id) }}?qty=" + newVal;
+}
+</script>
+
+{% endblock %}

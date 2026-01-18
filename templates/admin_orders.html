@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-4">All Orders</h3>
+
+<table class="table table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.user.name }}<br><small>{{ order.user.whatsapp }}</small></td>
+            <td>{{ order.total_amount | kes }}</td>
+            <td>
+                <span class="badge bg-{{ 'success' if order.payment_status == 'paid' else 'warning' }}">
+                    {{ order.payment_status }}
+                </span>
+            </td>
+            <td>
+                <span class="badge bg-secondary">{{ order.delivery_status }}</span>
+            </td>
+            <td>{{ order.created_at.strftime("%d %b %Y") }}</td>
+            <td>
+                <a href="{{ url_for('admin_order_detail', order_id=order.id) }}"
+                   class="btn btn-sm btn-dark">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

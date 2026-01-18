@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ===== APP BAR ===== */
+.app-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+/* Back button */
+.app-bar-back {
+    font-size: 20px;
+    text-decoration: none;
+    color: #111;
+}
+
+/* Title */
+.app-bar-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* ===== NOTIFICATIONS ===== */
+.notifications-wrapper {
+    max-width: 700px;
+    margin: auto;
+    padding: 8px;
+}
+
+.notification-item {
+    padding: 14px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.notification-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.4;
+}
+
+.notification-item {
+    background: #fff;
+    padding: 14px 14px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+/* unread highlight */
+.notification-unread {
+    border-left: 4px solid #2563eb;
+    background: #f8fafc;
+}
+</style>
+
+<!-- 🔝 APP BAR -->
+<div class="app-bar">
+    <a href="javascript:history.back()" class="app-bar-back">←</a>
+    <div class="app-bar-title">Notifications</div>
+</div>
+
+<!-- 📩 CONTENT -->
+<div class="notifications-wrapper">
+
+    {% if notifications %}
+        {% for n in notifications %}
+            <div class="notification-item {% if not n.is_read %}notification-unread{% endif %}">
+                <div class="notification-title">
+                    {{ n.title }}
+                </div>
+
+                <div class="notification-message">
+                    {{ n.message }}
+                </div>
+
+                <div class="notification-time">
+                    {{ n.created_at.strftime('%d %b %Y • %H:%M') }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted text-center mt-4">
+            No notifications yet
+        </p>
+    {% endif %}
+
+</div>
+
+{% endblock %}

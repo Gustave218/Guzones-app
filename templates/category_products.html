@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-4">
+  {{ category.name_fr if g.lang == 'fr' else category.name_en }}
+</h2>
+
+<!-- ✅ GRID FIX: 2 cols mobile, 3 tablet, 4 desktop -->
+<div class="row g-3 category-products-grid" id="productsGrid">
+
+  {% for product in products %}
+  {% set rating = (product.id % 3) + 3 %}
+  {% set reviews = (product.id * 13) % 240 + 12 %}
+
+  <div class="col-6 col-md-4 col-lg-3 product-item">
+
+    <div class="card h-100 shadow-sm product-card border-0 position-relative">
+
+      <!-- ❤️ WISHLIST -->
+      <span class="wishlist-btn">♡</span>
+
+      <!-- CLICKABLE CARD (IMAGE + BODY) -->
+      <a href="{{ url_for('product_detail', product_id=product.id) }}"
+         class="text-decoration-none text-dark">
+
+        <!-- IMAGE + BADGES -->
+        <div class="position-relative">
+
+          {% if product.is_new %}
+            <span class="product-badge badge-new">{{ t.new }}</span>
+          {% elif product.is_trending %}
+            <span class="product-badge badge-trending">{{ t.trending }}</span>
+          {% elif product.is_featured %}
+            <span class="product-badge badge-featured">{{ t.featured }}</span>
+          {% elif product.is_on_sale %}
+            <span class="product-badge badge-sale">{{ t.on_sale }}</span>
+          {% endif %}
+
+          {% if product.images %}
+            <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+                 class="card-img-top"
+                 style="height:180px; object-fit:cover;">
+          {% else %}
+            <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+                 class="card-img-top"
+                 style="height:180px; object-fit:cover;">
+          {% endif %}
+
+        </div>
+
+        <!-- PRODUCT INFO -->
+        <div class="card-body p-2">
+
+          <!-- ⭐ REVIEWS -->
+          <div class="rating mb-1">
+            {% for i in range(rating) %}★{% endfor %}
+            {% for i in range(5-rating) %}☆{% endfor %}
+            <span>({{ reviews }})</span>
+          </div>
+
+          <h6 class="fw-semibold mb-1 product-title">
+            {{ product.name_fr if g.lang == 'fr' else product.name_en }}
+          </h6>
+
+          <p class="fw-bold text-dark mb-0">
+            {{ product | money }}
+          </p>
+        </div>
+
+      </a>
+
+      <!-- ADD TO CART BUTTON -->
+      <div class="px-2 pb-3">
+        <a href="{{ url_for('add_to_cart', product_id=product.id) }}"
+           class="btn btn-dark w-100 rounded-pill btn-sm">
+          🛒 {{ t.add_to_cart }}
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- 🔄 LOADING INDICATOR -->
+<div id="loading" class="text-center my-4" style="display:none;">
+  <div class="spinner-border"></div>
+</div>
+
+<!-- ♾️ INFINITE SCROLL -->
+<script>
+let page = 1;
+let loading = false;
+let hasMore = true;
+
+window.addEventListener("scroll", () => {
+  if (!hasMore || loading) return;
+
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+    loadMore();
+  }
+});
+
+function loadMore() {
+  loading = true;
+  page++;
+  document.getElementById("loading").style.display = "block";
+
+  fetch(window.location.pathname + "?page=" + page, {
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  })
+  .then(res => res.text())
+  .then(html => {
+    if (!html.trim()) {
+      hasMore = false;
+      document.getElementById("loading").innerHTML = "<p>No more products</p>";
+      return;
+    }
+
+    const temp = document.createElement("div");
+    temp.innerHTML = html;
+
+    temp.querySelectorAll(".product-item").forEach(item => {
+      document.getElementById("productsGrid").appendChild(item);
+    });
+
+    loading = false;
+    document.getElementById("loading").style.display = "none";
+  })
+  .catch(() => {
+    loading = false;
+    document.getElementById("loading").style.display = "none";
+  });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-4">👥 Users Management</h3>
+
+<!-- ADD USER -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="POST"
+          action="{{ url_for('admin_add_user') }}"
+          class="row g-2">
+
+      <div class="col-md-3">
+        <input class="form-control"
+               name="name"
+               placeholder="Full name"
+               required>
+      </div>
+
+      <div class="col-md-3">
+        <input class="form-control"
+               name="whatsapp"
+               placeholder="WhatsApp (+2547...)"
+               required>
+      </div>
+
+      <div class="col-md-2">
+        <input class="form-control"
+               name="email"
+               placeholder="Email (optional)">
+      </div>
+
+      <div class="col-md-2">
+     <select name="role" class="form-select" required>
+       <option value="user">User</option>
+       <option value="admin">Admin</option>
+     </select>
+      </div>
+
+      <div class="col-md-3">
+      <input class="form-control"
+               name="address"
+               placeholder="Address"
+               required>
+      </div>
+
+      <div class="col-md-2">
+        <input class="form-control"
+               name="password"
+               placeholder="Password"
+               required>
+      </div>
+
+      <div class="col-md-2">
+        <button class="btn btn-dark w-100">
+          ➕ Add User
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- USERS TABLE -->
+<div class="card shadow-sm">
+  <div class="card-body table-responsive">
+    <table class="table align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>WhatsApp</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th style="width:220px">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.name }}</td>
+          <td>{{ user.whatsapp }}</td>
+          <td>{{ user.email or "—" }}</td>
+          <td>
+            <span class="badge 
+              {% if user.role == 'admin' %}bg-success
+              {% elif user.role == 'superadmin' %}bg-primary
+              {% else %}bg-secondary{% endif %}">
+              {{ user.role }}
+            </span>
+          </td>
+          <td>
+
+            {% if user.role != 'superadmin' %}
+            <a href="{{ url_for('toggle_admin', user_id=user.id) }}"
+               class="btn btn-sm btn-outline-primary">
+               Toggle Admin
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('delete_user', user_id=user.id) }}"
+               class="btn btn-sm btn-outline-danger"
+               onclick="return confirm('Delete this user?')">
+               Delete
+            </a>
+
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

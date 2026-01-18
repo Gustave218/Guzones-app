@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="mb-4">📢 Manage Banners</h4>
+
+<div class="row g-3">
+    {% for b in banners %}
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+
+            <img src="{{ url_for('static', filename='uploads/' + b.image) }}"
+                 class="card-img-top"
+                 style="height:160px;object-fit:cover;">
+
+            <div class="card-body">
+                <h6 class="fw-bold">{{ b.title }}</h6>
+                <p class="small text-muted">{{ b.description }}</p>
+
+                <span class="badge {% if b.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                    {{ "Active" if b.is_active else "Inactive" }}
+                </span>
+
+                <a href="{{ url_for('delete_banner', banner_id=b.id) }}"
+                   onclick="return confirm('Delete banner?')"
+                   class="btn btn-sm btn-outline-danger mt-2 w-100">
+                    Delete
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+<form method="POST" enctype="multipart/form-data" class="card p-3 mb-4">
+    <input type="file" name="image" class="form-control mb-2" required>
+
+    <input type="text" name="title" class="form-control mb-2" placeholder="Title" required>
+
+    <textarea name="description" class="form-control mb-2" placeholder="Description"></textarea>
+
+    <input type="number" step="0.01" name="price" class="form-control mb-2" placeholder="Price (optional)">
+
+    <select name="currency" class="form-control mb-2">
+        <option>USD</option>
+        <option>KES</option>
+        <option>CDF</option>
+        <option>EUR</option>
+    </select>
+
+    <input type="text" name="contact" class="form-control mb-2" placeholder="WhatsApp / Phone">
+
+    <button class="btn btn-dark w-100">Add Banner</button>
+</form>
