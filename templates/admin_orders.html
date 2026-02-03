@@ -20,7 +20,7 @@
         <tr>
             <td>#{{ order.id }}</td>
             <td>{{ order.user.name }}<br><small>{{ order.user.whatsapp }}</small></td>
-            <td>{{ order.total_amount | kes }}</td>
+            <td>{{ order.total_amount | money_value }}</td>
             <td>
                 <span class="badge bg-{{ 'success' if order.payment_status == 'paid' else 'warning' }}">
                     {{ order.payment_status }}

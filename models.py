@@ -140,7 +140,7 @@ class Order(db.Model):
 
     total_amount = db.Column(db.Float, nullable=False)
 
-    # PAYMENT STATUS: unpaid | paid
+    # PAYMENT STATUS: pending for confirmation | paid
     payment_status = db.Column(
         db.String(20),
         default="pending for confirmation",

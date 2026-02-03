@@ -2,192 +2,262 @@
 {% block content %}
 
 <style>
+/* ===== GLOBAL SAFETY ===== */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ===== PRODUCT PAGE ===== */
 .product-wrapper {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px 12px;
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px 12px;
+  overflow-x: hidden;
 }
 
 .product-card {
-    background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 20px 45px rgba(0,0,0,0.08);
-    padding: 20px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 20px 45px rgba(0,0,0,0.08);
+  padding: 20px;
+  overflow: hidden;
 }
 
 /* IMAGE */
 .image-container {
-    position: relative;
-    border-radius: 18px;
-    overflow: hidden;
-    cursor: pointer;
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 .main-image {
-    width: 100%;
-    height: auto;
-    display: block;
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-/* SHOP + LOCATION OVER IMAGE */
+/* SHOP + LOCATION */
 .shop-location {
-    position: absolute;
-    top: 10px;
-    left: 12px;
-    display: flex;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 6px 10px;
-    border-radius: 14px;
-    font-size: 12px;
-    z-index: 5;
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  display: flex;
+  gap: 10px;
+  background: rgba(255,255,255,0.95);
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  z-index: 5;
+  flex-wrap: wrap;
+  max-width: 90%;
 }
 
-.shop-location span {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #444;
-    font-weight: 500;
-}
-
-.shop-location i {
-    font-size: 13px;
-    color: #1a73e8;
-}
-
-/* THUMBS */
+/* THUMBNAILS — now WRAP */
 .thumb-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  max-width: 100%;
 }
 
 .thumb-row img {
-    width: 64px;
-    height: 64px;
-    object-fit: cover;
-    border-radius: 10px;
-    cursor: pointer;
-    border: 2px solid transparent;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  flex: 0 0 auto;
 }
 
 .thumb-row img:hover {
-    border-color: #000;
+  border-color: #000;
 }
 
 /* INFO */
 .product-title {
-    font-size: 26px;
-    font-weight: 700;
+  font-size: 26px;
+  font-weight: 700;
+  word-break: break-word;
 }
 
 .product-price {
-    font-size: 24px;
-    font-weight: 800;
-    color: #198754;
-    margin: 12px 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #198754;
+  margin: 12px 0;
 }
 
 .product-meta {
-    font-size: 12px;
-    color: #6b7280;
-    margin-bottom: 14px;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 14px;
 }
 
 /* QTY */
 .qty-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 18px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
 }
 
 .qty-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #000;
-    color: #fff;
-    border: none;
-    font-size: 20px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  border: none;
+  font-size: 20px;
 }
 
 .qty-input {
-    width: 60px;
-    height: 42px;
-    text-align: center;
-    border-radius: 10px;
-    border: 1px solid #ddd;
+  width: 60px;
+  height: 42px;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid #ddd;
 }
 
+/* ADD TO CART */
 .btn-cart {
-    background: #000;
-    color: #fff;
-    border-radius: 14px;
-    padding: 14px;
-    font-size: 17px;
-    font-weight: 600;
-    width: 100%;
+  background: #000;
+  color: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  width: 100%;
+}
+
+/* ===== ACTION BUTTONS (SHARE + CHAT) ===== */
+.product-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.share-btn {
+  background: #000;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  flex: 1;
+}
+
+.chat-btn {
+  background: #e53935; /* RED */
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  flex: 1;
 }
 
 /* GALLERY OVERLAY */
 .gallery-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.95);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .gallery-overlay img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 14px;
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 14px;
 }
 
 .gallery-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255,255,255,0.2);
-    color: #fff;
-    border: none;
-    font-size: 28px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border: none;
+  font-size: 28px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
 }
 
 .gallery-prev { left: 20px; }
 .gallery-next { right: 20px; }
 
 .gallery-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 30px;
-    color: #fff;
-    background: none;
-    border: none;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 30px;
+  color: #fff;
+  background: none;
+  border: none;
 }
 
+/* DIVIDER */
 .product-divider {
-    border: none;
-    height: 1px;
-    background: #eee;
-    margin: 12px 0 18px;
-}
-.related-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin: 60px 0 20px; /* 👈 more breathing room */
-    color: #111;
+  border: none;
+  height: 1px;
+  background: #eee;
+  margin: 12px 0 18px;
 }
 
+.related-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 60px 0 20px;
+  color: #111;
+}
+
+.product-actions{
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.share-btn{
+    flex: 1;
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.chat-btn{
+    flex: 1;
+    background: #dc3545; /* red */
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
 </style>
 
 <div class="product-wrapper">
@@ -218,21 +288,35 @@
 {% endif %}
 
 {% if product.images %}
-<img id="mainImage"
-     src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
-     class="main-image">
+  {% set first = product.images[0].image %}
+  {% if first.startswith('http') %}
+    <img id="mainImage"
+         src="{{ first }}"
+         class="main-image">
+  {% else %}
+    <img id="mainImage"
+         src="{{ url_for('static', filename=first) }}"
+         class="main-image">
+  {% endif %}
 {% else %}
-<img id="mainImage"
-     src="{{ url_for('static', filename='images/placeholder.png') }}"
-     class="main-image">
+  <img id="mainImage"
+       src="{{ url_for('static', filename='images/placeholder.png') }}"
+       class="main-image">
 {% endif %}
 </div>
 
 <div class="thumb-row">
 {% for img in product.images %}
-<img src="{{ url_for('static', filename='uploads/' + img.image) }}"
-     onclick="openGallery('{{ loop.index0 }}')">
+  {% if img.image.startswith('http') %}
+    <img src="{{ img.image }}"
+         onclick="openGallery('{{ loop.index0 }}')">
+  {% else %}
+    <img src="{{ url_for('static', filename=img.image) }}"
+         onclick="openGallery('{{ loop.index0 }}')">
+  {% endif %}
 {% endfor %}
+</div>
+</div>
 </div>
 
 </div>
@@ -247,6 +331,19 @@
 <div class="product-price mb-3">
 {{ product | money }}
 <hr class="product-divider">
+</div>
+
+<div class="product-actions">
+
+    <button class="share-btn" onclick="shareProduct()">
+        {{ t.share }}
+    </button>
+
+    <a href="{{ url_for('user_chat') }}"
+       class="chat-btn">
+        💬 Chat
+    </a>
+
 </div>
 
 <div class="product-meta">
@@ -300,9 +397,20 @@ Guzones.com • Shipping all over Africa
         <span class="wishlist-btn">♡</span>
 
         <div class="related-img">
-            <img src="{{ url_for('static', filename='uploads/' + p.images[0].image) if p.images else url_for('static', filename='images/placeholder.png') }}"
-                 alt="{{ p.name_fr if g.lang == 'fr' else p.name_en }}">
-        </div>
+  {% if p.images %}
+    {% set img = p.images[0].image %}
+    {% if img.startswith('http') %}
+      <img src="{{ img }}"
+           alt="{{ p.name_fr if g.lang == 'fr' else p.name_en }}">
+    {% else %}
+      <img src="{{ url_for('static', filename=img) }}"
+           alt="{{ p.name_fr if g.lang == 'fr' else p.name_en }}">
+    {% endif %}
+  {% else %}
+    <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+         alt="{{ p.name_fr if g.lang == 'fr' else p.name_en }}">
+  {% endif %}
+</div>
 
         <div class="related-body">
 
@@ -334,7 +442,11 @@ Guzones.com • Shipping all over Africa
 <script type="application/json" id="productImages">
 [
 {% for img in product.images %}
-"{{ url_for('static', filename='uploads/' + img.image) }}"{% if not loop.last %},{% endif %}
+  {% if img.image.startswith('http') %}
+    "{{ img.image }}"
+  {% else %}
+    "{{ url_for('static', filename=img.image) }}"
+  {% endif %}{% if not loop.last %},{% endif %}
 {% endfor %}
 ]
 </script>
@@ -380,6 +492,25 @@ function changeQty(val) {
 
   document.getElementById("cartLink").href =
     "{{ url_for('add_to_cart', product_id=product.id) }}?qty=" + newVal;
+}
+</script>
+
+<script>
+function shareProduct() {
+    const url = window.location.href;
+    const title = document.title;
+
+    if (navigator.share) {
+        // Mobile & modern browsers
+        navigator.share({
+            title: title,
+            url: url
+        });
+    } else {
+        // Fallback: WhatsApp share
+        const whatsapp = `https://wa.me/?text=${encodeURIComponent(title + " " + url)}`;
+        window.open(whatsapp, "_blank");
+    }
 }
 </script>
 

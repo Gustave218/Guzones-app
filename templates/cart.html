@@ -15,11 +15,16 @@
             <div class="cart-item">
 
                 <!-- Product image -->
-                {% if item.product.images and item.product.images|length > 0 %}
-                    <img src="{{ url_for('static', filename='uploads/' + item.product.images[0].image) }}">
-                {% else %}
-                    <img src="{{ url_for('static', filename='images/placeholder.png') }}">
-                {% endif %}
+{% if item.product.images and item.product.images|length > 0 %}
+    {% set img = item.product.images[0].image %}
+    {% if img.startswith('http') %}
+        <img src="{{ img }}">
+    {% else %}
+        <img src="{{ url_for('static', filename=img) }}">
+    {% endif %}
+{% else %}
+    <img src="{{ url_for('static', filename='images/placeholder.png') }}">
+{% endif %}
 
                 <!-- Product info -->
                 <div class="flex-grow-1">

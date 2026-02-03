@@ -1,3 +1,13 @@
+import cloudinary
+import cloudinary.uploader
+
+cloudinary.config(
+    cloud_name="dxvtxotqh",
+    api_key="337987853849534",
+    api_secret="XraXIio_fsEfmlB3XYbviwo04Kk",
+    secure=True
+)
+
 CURRENCIES = {
     "KES": {"symbol": "KES", "rate": 130, "decimals": 0},
     "USD": {"symbol": "$", "rate": 1, "decimals": 2},
@@ -6,10 +16,15 @@ CURRENCIES = {
     "TZS": {"symbol": "TZS", "rate": 2700, "decimals": 0},
     "UGX": {"symbol": "UGX", "rate": 3700, "decimals": 0},
 }
-
+from datetime import timedelta
+from datetime import datetime
+from email_service import send_order_notification
+from email_service import send_chat_notification
+from email_service import send_chat_notification
 from flask import jsonify, request
 from email.mime import image
 from models import Video, VideoLike
+from flask import send_from_directory
 from flask import abort, session, g
 import time  
 import os
@@ -31,16 +46,21 @@ from models import User, Category, Product, ProductImage, Order, OrderItem, Noti
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 # =========================
-# UPLOAD FOLDERS CONFIG
+# UPLOAD FOLDERS CONFIG (FLY VOLUME)
 # =========================
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
+UPLOAD_FOLDER = "/data/uploads"
 PRODUCT_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, "products")
 CATEGORY_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, "categories")
 
+# Ensure folders exist on the Fly Volume
 os.makedirs(PRODUCT_UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(CATEGORY_UPLOAD_FOLDER, exist_ok=True)
+
+# =========================
+# BANNER UPLOAD FOLDER (Fly Volume)
+# =========================
+BANNER_UPLOAD_FOLDER = os.path.join("/data", "uploads", "banners")
+os.makedirs(BANNER_UPLOAD_FOLDER, exist_ok=True)
 
 
 # =========================
@@ -55,6 +75,8 @@ def kes_filter(amount):
 app.secret_key = "dev-secret-key-change-later"
 mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.secret_key)
+
+
 # =========================
 # LANGUAGE CONFIG
 # =========================
@@ -67,16 +89,16 @@ def set_language():
 
 
 # ===============================
-# UPLOADS
+# UPLOADS (FLY VOLUME)
 # ===============================
-UPLOAD_FOLDER = os.path.join("static", "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["UPLOAD_FOLDER"] = PRODUCT_UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 # ===============================
 # CORE CONFIG
 # ===============================
+
+
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -87,7 +109,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///instance/guzone.db"
+    DB_PATH = "/data/guzone.db"
+    os.makedirs("/data", exist_ok=True)
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # ===============================
@@ -105,6 +129,12 @@ app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME", "guzones.app@gmail.com"
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", "opfgzxjjuspadxbi")
 app.config["MAIL_DEFAULT_SENDER"] = "Guzones <guzones.app@gmail.com>"
 
+# ===============================
+# SESSION SECURITY
+
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["REMEMBER_COOKIE_SECURE"] = True
     
 # =========================
 # EXTENSIONS
@@ -114,6 +144,8 @@ migrate.init_app(app, db)
 bcrypt.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = "login"
+app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=30)
+app.config["REMEMBER_COOKIE_REFRESH_EACH_REQUEST"] = True
 
 
 @login_manager.user_loader
@@ -144,6 +176,34 @@ def cart_count():
     return dict(cart_count=count)
 
 
+
+
+@app.route("/uploads/<path:filename>")
+def uploaded_files(filename):
+    return send_from_directory("/data/uploads", filename)
+
+    # =========================
+# JINJA FILTER: UPLOAD URL
+# =========================
+@app.template_filter("upload_url")
+def upload_url(path):
+    if not path:
+        return ""
+    return f"/uploads/{path}"
+
+
+from flask import url_for
+
+@app.template_filter("smart_img")
+def smart_img(path):
+    if not path:
+        return url_for("static", filename="images/placeholder.png")
+
+    if path.startswith("http"):
+        return path  # Cloudinary
+
+    return url_for("static", filename=path)  # Old local images
+
 # =========================
 # HOME
 # =========================
@@ -156,22 +216,21 @@ def home():
     categories = Category.query.all()
 
     new_arrivals = Product.query.filter_by(is_new=True) \
-        .order_by(Product.created_at.desc()).limit(8).all()
+        .order_by(Product.created_at.desc()).limit(20).all()
 
     trending = Product.query.filter_by(is_trending=True) \
-        .order_by(Product.created_at.desc()).limit(8).all()
+        .order_by(Product.created_at.desc()).limit(20).all()
 
     on_sale = Product.query.filter_by(is_on_sale=True) \
-        .order_by(Product.created_at.desc()).limit(8).all()
+        .order_by(Product.created_at.desc()).limit(20).all()
 
-    # FEATURED (For You)
+   # FEATURED (For You)
     featured = Product.query.filter_by(is_featured=True) \
-        .order_by(Product.created_at.desc()).limit(12).all()
+    .order_by(Product.created_at.desc()).all()
 
-    # FALLBACK: if no featured, show latest products
+# FALLBACK: if no featured, show latest products
     if not featured:
-        featured = Product.query.order_by(Product.created_at.desc()).limit(12).all()
-
+        featured = Product.query.order_by(Product.created_at.desc()).all()
     return render_template(
         "home.html",
         banners=banners,
@@ -197,7 +256,7 @@ def product_detail(product_id):
     related_products = Product.query.filter(
         Product.category_id == product.category_id,
         Product.id != product.id
-    ).limit(4).all()
+    ).order_by(Product.created_at.desc()).all()
 
     return render_template(
         "product_detail.html",
@@ -206,6 +265,8 @@ def product_detail(product_id):
     )
 
 
+from sqlalchemy.sql import func
+
 @app.route("/category/<int:category_id>")
 def products_by_category(category_id):
     page = request.args.get("page", 1, type=int)
@@ -213,22 +274,20 @@ def products_by_category(category_id):
 
     category = Category.query.get_or_404(category_id)
 
-    pagination = Product.query.filter_by(category_id=category_id)\
-        .order_by(Product.id.desc())\
-        .paginate(page=page, per_page=per_page, error_out=False)
+    query = Product.query.filter_by(category_id=category_id)\
+        .order_by(Product.id.desc())
 
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     products = pagination.items
 
-    # 🔹 AJAX (Infinite scroll)
+    # AJAX infinite scroll
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        if not products:
-            return ""   # 🔥 THIS STOPS FAKE SCROLLING
         return render_template(
             "partials/_category_products.html",
             products=products
         )
 
-    # 🔹 Normal page load
+    # Normal page
     return render_template(
         "category_products.html",
         category=category,
@@ -395,11 +454,14 @@ def checkout():
         order = Order(
             user_id=current_user.id,
             total_amount=total,
-            payment_status="unpaid",
+            payment_status="pending for confirmation",
             delivery_status="pending"
         )
         db.session.add(order)
         db.session.commit()
+
+        # SEND EMAIL TO YOU
+        send_order_notification(order, items, current_user, g.currency)
 
         for item in items:
             db.session.add(OrderItem(
@@ -450,6 +512,7 @@ def signup():
         user = User(
             name=name,
             whatsapp=whatsapp,
+            email=request.form.get("email"),
             address=address,
             password=generate_password_hash(password)
         )
@@ -458,7 +521,7 @@ def signup():
         db.session.commit()
 
         # ✅ Auto login
-        login_user(user)
+        login_user(user, remember=True)
 
         flash("Account created successfully 🎉", "success")
         return redirect(next_page or url_for("home"))
@@ -502,6 +565,28 @@ def inject_unread_messages():
         count = 0
 
     return dict(unread_messages=count)
+
+@app.context_processor
+def inject_year():
+    return {"current_year": datetime.utcnow().year}
+
+
+@app.route("/privacy")
+def privacy_policy():
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms_conditions():
+    return render_template("terms.html")
+
+@app.route("/about")
+def about_us():
+    return render_template("about.html")
+
+
+@app.route("/refund-policy")
+def refund_policy():
+    return render_template("refund.html")
 
 
 @app.route("/forgot-password", methods=["GET", "POST"])
@@ -649,14 +734,21 @@ def inject_notifications():
 @app.route("/chat", methods=["GET", "POST"])
 @login_required
 def user_chat():
+
     if request.method == "POST":
+        text = request.form["message"]
+
         msg = ChatMessage(
             user_id=current_user.id,
             sender="user",
-            message=request.form["message"]
+            message=text
         )
+
         db.session.add(msg)
         db.session.commit()
+
+        # 🔔 EMAIL NOTIFICATION TO ADMINS + TEAMS
+        send_chat_notification(current_user, text)
 
         return redirect(url_for("user_chat"))
 
@@ -675,52 +767,44 @@ def user_chat():
 
     return render_template("chat.html", messages=messages)
 
-@app.route("/chat/<int:user_id>")
-@login_required
-def user_chat_with_id(user_id):
 
-    # 🔵 MARK MESSAGES AS READ
-    ChatMessage.query.filter_by(
-        receiver_id=current_user.id,
-        sender_id=user_id,
-        is_read=False
-    ).update({"is_read": True})
-    db.session.commit()
-
-    messages = ChatMessage.query.filter(
-        (ChatMessage.sender_id == current_user.id) &
-        (ChatMessage.receiver_id == user_id) |
-        (ChatMessage.sender_id == user_id) &
-        (ChatMessage.receiver_id == current_user.id)
-    ).order_by(ChatMessage.created_at).all()
-
-    return render_template("chat.html", messages=messages)
-
-
-# =========================
-# ADMIN: CHAT WITH USER
 @app.route("/admin/chat/<int:user_id>", methods=["GET", "POST"])
 @login_required
 def admin_chat_user(user_id):
     if current_user.role not in ["admin", "superadmin"]:
         abort(403)
 
+    user = User.query.get_or_404(user_id)
+
     if request.method == "POST":
         msg = request.form.get("message")
+
         if msg:
             chat = ChatMessage(
                 sender="admin",
                 message=msg,
-                user_id=user_id
+                user_id=user.id
             )
             db.session.add(chat)
             db.session.commit()
 
+            # 🔔 EMAIL USER (only when message is sent)
+            send_chat_notification(user, msg)
+
+        return redirect(url_for("admin_chat_user", user_id=user.id))
+
+    # Load messages
     messages = ChatMessage.query.filter_by(
-        user_id=user_id
+        user_id=user.id
     ).order_by(ChatMessage.created_at.asc()).all()
 
-    user = User.query.get_or_404(user_id)
+    # Mark user messages as read
+    ChatMessage.query.filter_by(
+        user_id=user.id,
+        sender="user",
+        is_read=False
+    ).update({"is_read": True})
+    db.session.commit()
 
     return render_template(
         "admin_chat_user.html",
@@ -742,35 +826,6 @@ def admin_chats():
     )
 
     return render_template("admin_chats.html", users=users)
-
-@app.route("/admin/chat/<int:user_id>", methods=["GET", "POST"])
-@login_required
-def admin_chat_view(user_id):
-    if current_user.role not in ["admin", "superadmin"]:
-        abort(403)
-
-    if request.method == "POST":
-        msg = ChatMessage(
-            user_id=user_id,
-            sender="admin",
-            message=request.form["message"]
-        )
-        db.session.add(msg)
-        db.session.commit()
-        return redirect(url_for("admin_chat_view", user_id=user_id))
-
-    messages = ChatMessage.query.filter_by(
-        user_id=user_id
-    ).order_by(ChatMessage.created_at).all()
-
-    ChatMessage.query.filter_by(
-        user_id=user_id,
-        sender="user",
-        is_read=False
-    ).update({"is_read": True})
-    db.session.commit()
-
-    return render_template("admin_chat_view.html", messages=messages)
 
 # =========================
 # ADMIN: VIDEOS
@@ -1098,6 +1153,8 @@ def delete_category(category_id):
 # =========================
 # ADMIN: PRODUCTS
 # =========================
+import json
+
 @app.route("/admin/product/add", methods=["GET", "POST"])
 @login_required
 def add_product():
@@ -1107,6 +1164,7 @@ def add_product():
     categories = Category.query.all()
 
     if request.method == "POST":
+
         product = Product(
             name_en=request.form["name_en"],
             name_fr=request.form["name_fr"],
@@ -1115,7 +1173,7 @@ def add_product():
             shop_name=request.form["shop_name"],
             shop_location=request.form["shop_location"],
             price=float(request.form["price"]),
-            currency=request.form.get("currency", "USD"),  # ✅ DEFAULT USD
+            currency=request.form.get("currency", "USD"),
             category_id=int(request.form["category_id"]),
             is_new=bool(request.form.get("is_new")),
             is_trending=bool(request.form.get("is_trending")),
@@ -1124,32 +1182,29 @@ def add_product():
         )
 
         db.session.add(product)
-        db.session.commit()  # ✅ get product.id first
+        db.session.commit()  # get product.id
 
         # =========================
-        # SAVE PRODUCT IMAGES
+        # SAVE PRODUCT IMAGES (CLOUDINARY URLS)
         # =========================
-        for file in request.files.getlist("images"):
-            if file and allowed_file(file.filename):
-                original_name = secure_filename(file.filename)
+        cloud_images = request.form.get("cloud_images")
 
-                # 🔒 avoid filename collision
-                unique_name = f"{product.id}_{original_name}"
-
-                file.save(os.path.join(PRODUCT_UPLOAD_FOLDER, unique_name))
-
-                db.session.add(ProductImage(
-                    product_id=product.id,
-                    image=f"products/{unique_name}"
-                ))
-
-        db.session.commit()
+        if cloud_images:
+            try:
+                urls = json.loads(cloud_images)
+                for url in urls:
+                    db.session.add(ProductImage(
+                        product_id=product.id,
+                        image=url
+                    ))
+                db.session.commit()
+            except Exception as e:
+                print("Cloud image error:", e)
 
         flash("Product added successfully", "success")
         return redirect(url_for("admin_dashboard"))
 
     return render_template("add_product.html", categories=categories)
-
 # =========================
 # SET CURRENCY
 # =========================
@@ -1223,9 +1278,9 @@ def amount(value):
     return f"{symbols[selected]}{converted:,.0f}"
 
 # =========================
-# UPLOAD FOLDERS
+# UPLOAD FOLDERS (FLY VOLUME)
 # =========================
-BASE_UPLOAD_FOLDER = os.path.join("static", "uploads")
+BASE_UPLOAD_FOLDER = "/data/uploads"
 
 PRODUCT_UPLOAD_FOLDER = os.path.join(BASE_UPLOAD_FOLDER, "products")
 CATEGORY_UPLOAD_FOLDER = os.path.join(BASE_UPLOAD_FOLDER, "categories")
@@ -1290,6 +1345,29 @@ def delete_product(product_id):
     flash("Product deleted", "success")
     return redirect(url_for("admin_dashboard"))
 
+    # =========================
+# ADMIN: BULK DELETE PRODUCTS
+# =========================
+@app.route("/admin/products/bulk-delete", methods=["POST"])
+@login_required
+def bulk_delete_products():
+    if current_user.role not in ["admin", "superadmin"]:
+        abort(403)
+
+    ids = request.form.getlist("product_ids")
+
+    if not ids:
+        flash("No products selected", "warning")
+        return redirect(url_for("admin_dashboard"))
+
+    ProductImage.query.filter(ProductImage.product_id.in_(ids)).delete(synchronize_session=False)
+    Product.query.filter(Product.id.in_(ids)).delete(synchronize_session=False)
+
+    db.session.commit()
+
+    flash(f"{len(ids)} products deleted successfully", "success")
+    return redirect(url_for("admin_dashboard"))
+
 
 # =========================
 # ADMIN: BANNERS
@@ -1302,11 +1380,10 @@ def admin_banners():
     if request.method == "POST":
         image = request.files["image"]
 
-        filename = secure_filename(image.filename)
-        image.save(os.path.join("static/uploads/banners", filename))
+        result = cloudinary.uploader.upload(image)
 
         banner = Banner(
-            image=f"banners/{filename}",
+            image=result["secure_url"],  # ☁️ Cloudinary
             title=request.form["title"],
             description=request.form.get("description"),
             price=request.form.get("price"),
@@ -1328,29 +1405,25 @@ def admin_add_banner():
         return redirect(url_for("home"))
 
     if request.method == "POST":
-        image = request.files["image"]  # main image
-        extra_images = request.files.getlist("images")  # new
+        image = request.files["image"]
+        extra_images = request.files.getlist("images")
+
         title = request.form["title"]
         description = request.form["description"]
         contact = request.form.get("contact")
         tel = request.form.get("tel")
-
         is_active = bool(request.form.get("is_active"))
 
-        upload_folder = os.path.join("static", "uploads", "banners")
-        os.makedirs(upload_folder, exist_ok=True)
+        # ☁️ MAIN IMAGE → CLOUDINARY
+        result = cloudinary.uploader.upload(image)
 
-        main_filename = secure_filename(image.filename)
-        image.save(os.path.join(upload_folder, main_filename))
-
-        cta_text = request.form.get("cta_text") or "CONTACT US"
         banner = Banner(
-            image=f"banners/{main_filename}",
+            image=result["secure_url"],   # Cloudinary
             title=title,
             description=description,
             contact=contact,
-            cta_text=cta_text,
-            cta_color = request.form.get("cta_color") or "#ff3b3b",
+            cta_text=request.form.get("cta_text") or "CONTACT US",
+            cta_color=request.form.get("cta_color") or "#ff3b3b",
             tel=tel,
             is_active=is_active
         )
@@ -1358,17 +1431,16 @@ def admin_add_banner():
         db.session.add(banner)
         db.session.commit()
 
+        # ☁️ EXTRA IMAGES → CLOUDINARY
         for img in extra_images:
             if img and img.filename:
-                filename = secure_filename(img.filename)
-                img.save(os.path.join(upload_folder, filename))
+                res = cloudinary.uploader.upload(img)
                 db.session.add(BannerImage(
                     banner_id=banner.id,
-                    image=f"banners/{filename}"
+                    image=res["secure_url"]
                 ))
 
         db.session.commit()
-
         flash("Banner added successfully", "success")
         return redirect(url_for("admin_banners"))
 
@@ -1441,6 +1513,53 @@ def update_order_status(order_id):
     flash("Order status updated successfully", "success")
     return redirect(url_for("admin_order_detail", order_id=order.id))
 
+@app.template_filter("order_money")
+def order_money(order):
+    currency = "USD"  # default / system currency
+
+    config = CURRENCIES.get(currency, {
+        "symbol": currency,
+        "decimals": 2
+    })
+
+    symbol = config["symbol"]
+    decimals = config["decimals"]
+
+    formatted_amount = f"{order.total_amount:,.{decimals}f}"
+    return f"{symbol} {formatted_amount}"
+
+@app.template_filter("money_amount")
+def money_amount(amount):
+    currency = "USD"  # system currency for now
+
+    config = CURRENCIES.get(currency, {
+        "symbol": currency,
+        "decimals": 2
+    })
+
+    symbol = config["symbol"]
+    decimals = config["decimals"]
+
+    formatted_amount = f"{amount:,.{decimals}f}"
+    return f"{symbol} {formatted_amount}"
+
+@app.template_filter("money_value")
+def money_value(amount):
+    """
+    Convert a numeric amount using selected currency (g.currency)
+    """
+    if amount is None:
+        return ""
+
+    currency_code = getattr(g, "currency", "USD")
+    currency = CURRENCIES.get(currency_code, CURRENCIES["USD"])
+
+    converted = amount * currency["rate"]
+    decimals = currency["decimals"]
+    symbol = currency["symbol"]
+
+    return f"{symbol} {converted:,.{decimals}f}"
+
 @app.route("/set-language/<lang>")
 def set_language(lang):
     if lang in ["en", "fr"]:
@@ -1500,7 +1619,19 @@ def inject_translations():
             "already_have_an_account?": "Already have an account?",
             "log_in_here.": "Log in here.",
             "my_account": "My Account",
-            "cart": "Cart"
+            "cart": "Cart",
+            "my_orders": "My Orders",
+            "your_password": "Your password",
+            "welcome_back_please_log_in_to_continue": "Welcome back! Please log in to continue.",
+            "join_guzones_and_start_shopping_smarter": "Join Guzones and start shopping smarter.",
+            "select_your_country_and_enter_your_whatsApp_number": "Select your country and enter your WhatsApp number",
+            "show": "show",
+            "already_have_an_account": "Already have an account?",
+            "t.login" : "Login",
+            "create_one_here": "Create one here",
+            "forgot_password": "Forgot Password",
+            "share": "Share",
+            "chat_with_us": "Chat with us"
         },
         "fr": {
             "add_to_cart": "Ajouter...",
@@ -1552,7 +1683,19 @@ def inject_translations():
             "already_have_an_account?": "Vous avez déjà un compte?",
             "log_in_here.": "Connectez-vous ici.",
             "my_account": "Mon compte",
-            "cart": "Panier"
+            "cart": "Panier",
+            "my_orders": "Mes commandes",
+            "your_password" : "Votre mot de passe",
+            "welcome_back_please_log_in_to_continue": "Bon retour ! Veuillez vous connecter pour continuer.",
+            "join_guzones_and_start_shopping_smarter": "Rejoignez Guzones et commencez à faire vos achats plus intelligemment.",
+            "select_your_country_and_enter_your_whatsApp_number": "Sélectionnez votre pays et saisissez votre numéro WhatsApp",
+            "show": "voir",
+            "already_have_an_account": "Vous avez déjà un compte?",
+            "t.login" : "Connexion",
+            "create_one_here": "Créez-en un ici",
+            "forgot_password": "Mot de passe oublié",
+            "share": "Partager",
+            "chat_with_us": "Discutez avec nous"
         }
     }
 
@@ -1566,4 +1709,5 @@ def inject_translations():
 # START
 # =========================
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)

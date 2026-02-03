@@ -5,8 +5,8 @@
 
 <div class="list-group">
     {% for user in users %}
-        <a href="{{ url_for('admin_chat_view', user_id=user.id) }}"
-           class="list-group-item list-group-item-action">
+        <a href="{{ url_for('admin_chat_user', user_id=user.id) }}"
+            class="list-group-item list-group-item-action">
             <strong>{{ user.name }}</strong><br>
             <small class="text-muted">{{ user.whatsapp }}</small>
         </a>

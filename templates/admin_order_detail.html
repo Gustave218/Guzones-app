@@ -45,10 +45,10 @@
                             {% endif %}
                             <span>{{ item.product.name_en }}</span>
                         </td>
-                        <td>{{ "{:,.0f}".format(item.price) }} KES</td>
+                        <td>{{ item.price | money_value }}</td>
                         <td>{{ item.quantity }}</td>
                         <td class="fw-bold">
-                            {{ "{:,.0f}".format(item.price * item.quantity) }} KES
+                           <td>{{ (item.price * item.quantity) | money_value }}</td>
                         </td>
                     </tr>
                     {% endfor %}
@@ -56,7 +56,7 @@
             </table>
 
             <div class="text-end fs-5 fw-bold">
-                Total: {{ "{:,.0f}".format(order.total_amount) }} KES
+                <strong>Total: {{ order.total_amount | money_value }}</strong>
             </div>
         </div>
     </div>

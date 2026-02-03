@@ -80,10 +80,9 @@
 <div class="video-item">
 
     <!-- VIDEO -->
-    <video playsinline loop controls>
+   <video playsinline loop controls>
         <source src="{{ url_for('static', filename='uploads/videos/' ~ v.video_file) }}" type="video/mp4">
     </video>
-
     <!-- VIDEO TEXT -->
     <div class="video-info">
         <strong>{{ v.title }}</strong><br>

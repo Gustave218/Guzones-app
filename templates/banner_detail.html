@@ -6,35 +6,64 @@
   <div class="container mt-3">
 
   <!-- MAIN IMAGE -->
+{% if banner.image %}
+<div class="banner-main-image">
+  {% if banner.image.startswith('http') %}
+    <img
+      id="mainBannerImage"
+      src="{{ banner.image }}"
+      alt="{{ banner.title }}"
+      onclick="openImageZoom(this.src)"
+      class="img-fluid">
+  {% else %}
+    <img
+      id="mainBannerImage"
+      src="{{ url_for('static', filename=banner.image) }}"
+      alt="{{ banner.title }}"
+      onclick="openImageZoom(this.src)"
+      class="img-fluid">
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- THUMBNAILS -->
+{% if banner.images and banner.images|length > 0 %}
+<div class="banner-thumbnails">
+
+  <!-- Main image thumbnail -->
   {% if banner.image %}
-  <div class="banner-main-image">
-    <img
-  id="mainBannerImage"
-  src="{{ url_for('static', filename='uploads/' ~ banner.image) }}"
-  alt="{{ banner.title }}"
-  onclick="openImageZoom(this.src)">>
-  </div>
+    {% if banner.image.startswith('http') %}
+      <img
+        src="{{ banner.image }}"
+        onclick="changeBannerImage(this.src)"
+        class="active-thumb"
+        alt="Main banner image">
+    {% else %}
+      <img
+        src="{{ url_for('static', filename=banner.image) }}"
+        onclick="changeBannerImage(this.src)"
+        class="active-thumb"
+        alt="Main banner image">
+    {% endif %}
   {% endif %}
 
-  <!-- THUMBNAILS -->
-  {% if banner.images %}
-  <div class="banner-thumbnails">
-    
-    <!-- Main image thumbnail -->
-    <img
-      src="{{ url_for('static', filename='uploads/' ~ banner.image) }}"
-      onclick="changeBannerImage(this.src)"
-      class="active-thumb">
+  <!-- Extra images -->
+  {% for img in banner.images %}
+    {% if img.image.startswith('http') %}
+      <img
+        src="{{ img.image }}"
+        onclick="changeBannerImage(this.src)"
+        alt="Banner image {{ loop.index }}">
+    {% else %}
+      <img
+        src="{{ url_for('static', filename=img.image) }}"
+        onclick="changeBannerImage(this.src)"
+        alt="Banner image {{ loop.index }}">
+    {% endif %}
+  {% endfor %}
 
-    <!-- Extra images -->
-    {% for img in banner.images %}
-    <img
-      src="{{ url_for('static', filename='uploads/' ~ img.image) }}"
-      onclick="changeBannerImage(this.src)">
-    {% endfor %}
-
-  </div>
-  {% endif %}
+</div>
+{% endif %}
 
   <div class="banner-card title">{{ banner.title }}</div>
 

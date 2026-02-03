@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <meta name="theme-color" content="#000000">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Guzones</title>
+    <title>Guzones – Smart Online Shopping Across Africa</title>
+    <meta name="description" content="Guzones is an African online shopping platform offering electronics, fashion, beauty, and more. Shop smart, secure, and easily across Africa.">
+    <meta property="og:title" content="Guzones – Smart Online Shopping Across Africa">
+    <meta property="og:description" content="Shop electronics, fashion, beauty, and more on Guzones. A trusted African online shopping platform built for easy and secure shopping across Africa.">
+    <meta property="og:image" content="{{ url_for('static', filename='favicon.png', _external=True) }}">
+    <meta property="og:url" content="https://guzones.com">
+    <meta property="og:type" content="website">
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -209,6 +217,74 @@
 body {
     overflow-x: hidden;
 }
+
+.cart-icon {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background: #dc3545;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 50%;
+    padding: 0 5px;
+}
+
+.guzones-footer {
+  background: #0b0b0b;
+  color: #fff;
+  padding: 40px 20px 20px;
+  margin-top: 60px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.footer-col h3,
+.footer-col h4 {
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.footer-col p {
+  opacity: 0.8;
+  font-size: 14px;
+}
+
+.footer-col a {
+  display: block;
+  color: #ddd;
+  text-decoration: none;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.footer-col a:hover {
+  color: #ff3b3b;
+}
+
+.footer-bottom {
+  border-top: 1px solid #222;
+  margin-top: 30px;
+  padding-top: 15px;
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.7;
+}
     </style>
 </head>
 
@@ -291,6 +367,17 @@ body {
             {% endif %}
         </a>
 
+        <a class="nav-link position-relative" href="{{ url_for('cart') }}">
+    <span class="cart-icon">
+        🛒
+        {% if cart_count > 0 %}
+        <span class="cart-badge">
+            {{ cart_count }}
+        </span>
+        {% endif %}
+    </span>
+</a>
+
         <button class="navbar-toggler ms-1"
                 type="button"
                 data-bs-toggle="collapse"
@@ -334,13 +421,13 @@ body {
             <!-- NORMAL USER -->
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('user_dashboard') }}">
-                    {{ t.my_account }}
+                    {{ t.my_orders }}
                 </a>
             </li>
 
             <li class="nav-item position-relative">
                 <a class="nav-link" href="{{ url_for('cart') }}">
-                    🛒 {{ t.Cart }}
+                    🛒 {{ t.cart }}
                     {% if cart_count > 0 %}
                         <span class="badge bg-danger ms-1">
                             {{ cart_count }}
@@ -380,30 +467,45 @@ body {
 
 </div> <!-- END .container -->
 
+{% if not hide_footer %}
 <footer class="guzones-footer">
-    <div class="footer-container">
-        <div class="footer-brand">
-            <h4>Guzones</h4>
-            <p>Building digital solutions for Africa.</p>
-        </div>
+  <div class="footer-grid">
 
-        <div class="footer-links">
-            <a href="https://school.guzones.com" target="_blank" rel="noopener">
-                🎓 Guzones School
-            </a>
-            <a href="https://web.guzones.com" target="_blank" rel="noopener">
-                💻 Guzones Web
-            </a>
-            <a href="https://travel.guzones.com" target="_blank" rel="noopener">
-                ✈️ Guzones Travel
-            </a>
-        </div>
+    <!-- BRAND -->
+    <div class="footer-col brand">
+      <h3>Guzones</h3>
+      <p>Building digital solutions for Africa.</p>
     </div>
 
-    <div class="footer-bottom">
-        © 2026 Guzones. All rights reserved.
+    <!-- ECOSYSTEM -->
+    <div class="footer-col">
+      <h4>Our Ecosystem</h4>
+      <a href="https://school.guzones.com" target="_blank">Guzones School</a>
+      <a href="https://web.guzones.com" target="_blank">Guzones Web</a>
+      <a href="https://travel.guzones.com" target="_blank">Guzones Travel</a>
+      <a href="https://whatsapp.com/channel/0029Vb632Ax1XquQxrxTve2x" target="_blank">Follow our WhatsApp channel</a>
+      <a href="https://wa.me/254710603313?text=Hey%20Gustave%20I%20would%20like%20to%20start%20selling%20on%20Guzones" 
+       target="_blank">
+        Start selling on Guzones
+    </a>
     </div>
+
+    <!-- LEGAL -->
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="{{ url_for('about_us') }}">About Us</a>
+      <a href="{{ url_for('privacy_policy') }}">Privacy Policy</a>
+      <a href="{{ url_for('terms_conditions') }}">Terms & Conditions</a>
+      <a href="{{ url_for('refund_policy') }}">Refund Policy</a>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 Guzones. All rights reserved.
+  </div>
 </footer>
+{% endif %}
 
 <!-- ===============================
      SCRIPTS

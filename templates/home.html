@@ -3,41 +3,52 @@
 
 {% if banners %}
 <div class="promo-fullbleed">
-    <div id="promoCarousel" class="carousel slide" data-bs-ride="carousel">
-      <div class="carousel-indicators">
-    {% for b in banners %}
-    <button type="button"
-            data-bs-target="#promoCarousel"
-            data-bs-slide-to="{{ loop.index0 }}"
-            class="{% if loop.first %}active{% endif %}"
-            aria-current="{% if loop.first %}true{% endif %}">
-    </button>
-    {% endfor %}
-</div>
-        <div class="carousel-inner">
+  <div id="promoCarousel" class="carousel slide" data-bs-ride="carousel">
 
-            {% for b in banners %}
-            <div class="carousel-item {% if loop.first %}active{% endif %}">
-    <div class="banner-wrapper position-relative">
+    <!-- INDICATORS -->
+    <div class="carousel-indicators">
+      {% for b in banners %}
+      <button type="button"
+              data-bs-target="#promoCarousel"
+              data-bs-slide-to="{{ loop.index0 }}"
+              class="{% if loop.first %}active{% endif %}"
+              aria-current="{% if loop.first %}true{% endif %}">
+      </button>
+      {% endfor %}
+    </div>
 
-        <a href="{{ url_for('banner_detail', banner_id=b.id) }}">
-            <img src="{{ url_for('static', filename='uploads/' + b.image) }}"
-                 class="d-block w-100 banner-img">
-        </a>
+    <!-- SLIDES -->
+    <div class="carousel-inner">
 
-        <!-- CTA -->
-        <a href="{{ url_for('banner_detail', banner_id=b.id) }}"
-   class="banner-cta"
-   style="background-color: {{ b.cta_color }};">
-    {{ b.cta_text }}
+      {% for b in banners %}
+      <div class="carousel-item {% if loop.first %}active{% endif %}">
+        <div class="banner-wrapper position-relative">
+
+          <a href="{{ url_for('banner_detail', banner_id=b.id) }}">
+    {% if b.image.startswith('http') %}
+        <img src="{{ b.image }}"
+             class="d-block w-100 banner-img"
+             alt="Banner">
+    {% else %}
+        <img src="{{ url_for('static', filename=b.image) }}"
+             class="d-block w-100 banner-img"
+             alt="Banner">
+    {% endif %}
 </a>
 
-    </div>
-</div>
-            {% endfor %}
+          <!-- CTA -->
+          <a href="{{ url_for('banner_detail', banner_id=b.id) }}"
+             class="banner-cta"
+             style="background-color: {{ b.cta_color }};">
+            {{ b.cta_text }}
+          </a>
 
         </div>
+      </div>
+      {% endfor %}
+
     </div>
+  </div>
 </div>
 {% endif %}
 
@@ -92,12 +103,18 @@
             <span class="product-badge badge-new">{{ t.new }}</span>
 
             {% if product.images %}
-              <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
-                   loading="lazy">
-            {% else %}
-              <img src="{{ url_for('static', filename='images/placeholder.png') }}"
-                   loading="lazy">
-            {% endif %}
+  {% set img = product.images[0].image %}
+
+  {% if img.startswith('http') %}
+    <img src="{{ img }}" loading="lazy">
+  {% else %}
+    <img src="{{ url_for('static', filename=img) }}" loading="lazy">
+  {% endif %}
+
+{% else %}
+  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+       loading="lazy">
+{% endif %}
           </div>
 
           <div class="card-body p-2">
@@ -149,13 +166,19 @@
           <div class="position-relative">
             <span class="product-badge badge-trending">{{ t.trending }}</span>
 
-            {% if product.images %}
-              <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
-                   loading="lazy">
-            {% else %}
-              <img src="{{ url_for('static', filename='images/placeholder.png') }}"
-                   loading="lazy">
-            {% endif %}
+           {% if product.images %}
+  {% set img = product.images[0].image %}
+
+  {% if img.startswith('http') %}
+    <img src="{{ img }}" loading="lazy">
+  {% else %}
+    <img src="{{ url_for('static', filename=img) }}" loading="lazy">
+  {% endif %}
+
+{% else %}
+  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+       loading="lazy">
+{% endif %}
           </div>
 
           <div class="card-body p-2">
@@ -204,13 +227,19 @@
           <div class="position-relative">
             <span class="product-badge badge-sale">{{ t.on_sale }}</span>
 
-            {% if product.images %}
-              <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
-                   loading="lazy">
-            {% else %}
-              <img src="{{ url_for('static', filename='images/placeholder.png') }}"
-                   loading="lazy">
-            {% endif %}
+           {% if product.images %}
+  {% set img = product.images[0].image %}
+
+  {% if img.startswith('http') %}
+    <img src="{{ img }}" loading="lazy">
+  {% else %}
+    <img src="{{ url_for('static', filename=img) }}" loading="lazy">
+  {% endif %}
+
+{% else %}
+  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+       loading="lazy">
+{% endif %}
           </div>
 
           <div class="card-body p-2">
@@ -255,14 +284,23 @@
        class="text-decoration-none">
 
       {% if product.images %}
-        <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
-             loading="lazy"
-             class="card-img-top for-you-img">
-      {% else %}
-        <img src="{{ url_for('static', filename='images/placeholder.png') }}"
-             loading="lazy"
-             class="card-img-top for-you-img">
-      {% endif %}
+  {% set img = product.images[0].image %}
+
+  {% if img.startswith('http') %}
+    <img src="{{ img }}"
+         loading="lazy"
+         class="card-img-top for-you-img">
+  {% else %}
+    <img src="{{ url_for('static', filename=img) }}"
+         loading="lazy"
+         class="card-img-top for-you-img">
+  {% endif %}
+
+{% else %}
+  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+       loading="lazy"
+       class="card-img-top for-you-img">
+{% endif %}
 
       <!-- PRICE OVER IMAGE -->
       <span class="for-you-price">

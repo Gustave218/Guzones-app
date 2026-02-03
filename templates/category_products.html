@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% set hide_footer = True %}
+
 {% block content %}
 
 <h2 class="mb-4">
@@ -19,7 +21,7 @@
       <!-- ❤️ WISHLIST -->
       <span class="wishlist-btn">♡</span>
 
-      <!-- CLICKABLE CARD (IMAGE + BODY) -->
+      <!-- CLICKABLE CARD -->
       <a href="{{ url_for('product_detail', product_id=product.id) }}"
          class="text-decoration-none text-dark">
 
@@ -37,15 +39,14 @@
           {% endif %}
 
           {% if product.images %}
-            <img src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+            <img src="{{ product.images[0].image | smart_img }}"
                  class="card-img-top"
                  style="height:180px; object-fit:cover;">
           {% else %}
-            <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+            <img src="{{ 'images/placeholder.png' | smart_img }}"
                  class="card-img-top"
                  style="height:180px; object-fit:cover;">
           {% endif %}
-
         </div>
 
         <!-- PRODUCT INFO -->
@@ -69,7 +70,7 @@
 
       </a>
 
-      <!-- ADD TO CART BUTTON -->
+      <!-- ADD TO CART -->
       <div class="px-2 pb-3">
         <a href="{{ url_for('add_to_cart', product_id=product.id) }}"
            class="btn btn-dark w-100 rounded-pill btn-sm">
@@ -84,19 +85,18 @@
 
 </div>
 
-<!-- 🔄 LOADING INDICATOR -->
+<!-- 🔄 LOADING -->
 <div id="loading" class="text-center my-4" style="display:none;">
   <div class="spinner-border"></div>
 </div>
 
-<!-- ♾️ INFINITE SCROLL -->
+<!-- ♾️ INFINITE SCROLL (LOOP MODE) -->
 <script>
 let page = 1;
 let loading = false;
-let hasMore = true;
 
 window.addEventListener("scroll", () => {
-  if (!hasMore || loading) return;
+  if (loading) return;
 
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
     loadMore();
@@ -114,8 +114,9 @@ function loadMore() {
   .then(res => res.text())
   .then(html => {
     if (!html.trim()) {
-      hasMore = false;
-      document.getElementById("loading").innerHTML = "<p>No more products</p>";
+      page = 1; // 🔁 restart SAME category
+      loading = false;
+      document.getElementById("loading").style.display = "none";
       return;
     }
 

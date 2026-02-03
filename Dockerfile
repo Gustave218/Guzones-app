@@ -1,21 +1,28 @@
-ARG PYTHON_VERSION=3.14-slim
+# Use a stable Python version (Fly.io friendly)
+FROM python:3.12-slim
 
-FROM python:${PYTHON_VERSION}
+# Environment settings
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-RUN mkdir -p /code
-
+# Create app directory
 WORKDIR /code
 
-COPY requirements.txt /tmp/requirements.txt
-RUN set -ex && \
-    pip install --upgrade pip && \
-    pip install -r /tmp/requirements.txt && \
-    rm -rf /root/.cache/
-COPY . /code
+# System dependencies (optional but recommended)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 8000
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-CMD ["python","manage.py","runserver","0.0.0.0:8000"]
+# Copy project files
+COPY . .
+
+# Fly.io listens on 8080
+EXPOSE 8080
+
+# Run Flask with Gunicorn (your original)
+CMD ["gunicorn", "app:app", "--worker-class", "eventlet", "--workers", "1", "--bind", "0.0.0.0:8080"]

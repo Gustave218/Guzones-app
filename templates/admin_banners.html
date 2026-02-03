@@ -8,7 +8,11 @@
     <div class="col-md-4">
         <div class="card shadow-sm">
 
-            <img src="{{ url_for('static', filename='uploads/' + b.image) }}"
+           {% if b.image.startswith('http') %}
+    <img src="{{ b.image }}">
+{% else %}
+    <img src="{{ url_for('static', filename=b.image) }}">
+{% endif %}
                  class="card-img-top"
                  style="height:160px;object-fit:cover;">
 

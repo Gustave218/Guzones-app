@@ -1,12 +1,41 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container">
+
+<!-- intl-tel-input CSS -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css"
+/>
+
+<style>
+  .auth-card {
+    border-radius: 16px;
+  }
+  .password-wrapper {
+    position: relative;
+  }
+  .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+  }
+</style>
+
+<div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-12 col-md-6 col-lg-5">
 
-      <div class="card shadow-sm border-0 p-4 mt-4">
-        <h2 class="mb-4 text-center">{{ t.create_an_account }}</h2>
+      <div class="card auth-card shadow border-0 p-4">
+        <h3 class="mb-3 text-center fw-bold">
+          {{ t.create_an_account }}
+        </h3>
+        <p class="text-center text-muted mb-4">
+          {{ t.join_guzones_and_start_shopping_smarter }}
+        </p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% for category, message in messages %}
@@ -30,7 +59,7 @@
 
           <!-- WhatsApp Number -->
           <div class="mb-3">
-            <label for="phone" class="form-label">WhatsApp Number</label>
+            <label class="form-label">WhatsApp Number</label>
             <input
               type="tel"
               id="phone"
@@ -39,14 +68,14 @@
               required
             >
             <small class="text-muted">
-              Select your country and enter your WhatsApp number
+              {{ t.select_your_country_and_enter_your_whatsApp_number }}
             </small>
           </div>
 
-          <!-- Hidden full phone (sent to Flask) -->
+          <!-- Hidden phone -->
           <input type="hidden" name="full_phone" id="full_phone">
 
-          <!-- Email (optional) -->
+          <!-- Email -->
           <div class="mb-3">
             <label class="form-label">{{ t.email_optional }}</label>
             <input
@@ -70,30 +99,68 @@
           </div>
 
           <!-- Password -->
-          <div class="mb-3">
+          <div class="mb-4 password-wrapper">
             <label class="form-label">{{ t.password }}</label>
             <input
               type="password"
               name="password"
+              id="password"
               class="form-control"
-              placeholder="Enter password"
+              placeholder="{{ t.your_password }}"
               required
             >
+            <span class="toggle-password" onclick="togglePassword('password')">
+              {{ t.show }}
+            </span>
           </div>
 
           <!-- Submit -->
-          <button type="submit" class="btn btn-primary w-100 py-2">
+          <button type="submit" class="btn btn-dark w-100 py-2 rounded-pill">
             {{ t.create_an_account }}
           </button>
         </form>
 
-        <p class="mt-3 text-center">
-          Already have an account?
-          <a href="{{ url_for('login') }}">Log in</a>
+        <p class="mt-4 text-center text-muted">
+          {{ t.already_have_an_account }}
+          <a href="{{ url_for('login') }}" class="fw-semibold">
+            {{ t.login }}
+          </a>
         </p>
       </div>
 
     </div>
   </div>
 </div>
+
+<!-- intl-tel-input JS -->
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"></script>
+
+<script>
+  const phoneInput = document.querySelector("#phone");
+  const fullPhoneInput = document.querySelector("#full_phone");
+
+  const iti = window.intlTelInput(phoneInput, {
+    initialCountry: "ke",
+    separateDialCode: true,
+    nationalMode: false,
+    utilsScript:
+      "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
+  });
+
+  phoneInput.form.addEventListener("submit", function (event) {
+    if (iti.isValidNumber()) {
+      fullPhoneInput.value = iti.getNumber();
+    } else {
+      alert("Please enter a valid WhatsApp number");
+      event.preventDefault();
+    }
+  });
+
+  function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+  }
+</script>
+
 {% endblock %}
