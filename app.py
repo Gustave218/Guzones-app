@@ -98,22 +98,29 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 # CORE CONFIG
 # ===============================
 
-
+import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+# Load base config
 app.config.from_object(Config)
 
+# Get database URL from environment (Fly / Railway / etc)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
 if DATABASE_URL:
+    # 🔥 Fix old postgres:// prefix (required for SQLAlchemy 2.x)
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+
 else:
-    DB_PATH = "/data/guzone.db"
-    os.makedirs("/data", exist_ok=True)
+    # Fallback to SQLite (local or Fly volume)
+    DATA_DIR = "/data"
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+    DB_PATH = os.path.join(DATA_DIR, "guzone.db")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
