@@ -1,0 +1,30 @@
+<div class="col-6">
+  <div class="grid-card">
+
+    <a href="{{ url_for('product_detail', product_id=product.id) }}">
+
+      {% if product.images %}
+        {% set img = product.images[0].image %}
+        {% if img.startswith('http') %}
+          <img src="{{ img }}" class="grid-img">
+        {% else %}
+          <img src="{{ url_for('static', filename=img) }}" class="grid-img">
+        {% endif %}
+      {% else %}
+        <img src="{{ url_for('static', filename='images/placeholder.png') }}" class="grid-img">
+      {% endif %}
+
+      <div class="grid-info">
+        <div class="grid-title">
+          {{ product.name_fr if g.lang == 'fr' else product.name_en }}
+        </div>
+
+        <div class="grid-price">
+          {{ product | money }}
+        </div>
+      </div>
+
+    </a>
+
+  </div>
+</div>

@@ -9,12 +9,12 @@ cloudinary.config(
 )
 
 CURRENCIES = {
-    "KES": {"symbol": "KES", "rate": 130, "decimals": 0},
+    "KES": {"symbol": "KES", "rate": 126, "decimals": 0},
     "USD": {"symbol": "$", "rate": 1, "decimals": 2},
     "EUR": {"symbol": "€", "rate": 0.93, "decimals": 2},
-    "CDF": {"symbol": "CDF", "rate": 2500, "decimals": 0},
-    "TZS": {"symbol": "TZS", "rate": 2700, "decimals": 0},
-    "UGX": {"symbol": "UGX", "rate": 3700, "decimals": 0},
+    "CDF": {"symbol": "CDF", "rate": 2300, "decimals": 0},
+    "TZS": {"symbol": "TZS", "rate": 2500, "decimals": 0},
+    "UGX": {"symbol": "UGX", "rate": 3500, "decimals": 0},
 }
 from datetime import timedelta
 from datetime import datetime
@@ -83,8 +83,9 @@ serializer = URLSafeTimedSerializer(app.secret_key)
 SUPPORTED_LANGUAGES = ["en", "fr"]
 
 @app.before_request
-def set_language():
+def load_globals():
     g.lang = session.get("lang", "en")
+    g.currency = session.get("currency", "USD")
 
 
 
@@ -107,7 +108,7 @@ app.config.from_object(Config)
 
 # Get database URL from environment (Fly / Railway / etc)
 DATABASE_URL = os.getenv("DATABASE_URL")
-
+print(DATABASE_URL,"ths is our dbsaahlldjakldjadjljdjadlddsldjsl")
 if DATABASE_URL:
     # 🔥 Fix old postgres:// prefix (required for SQLAlchemy 2.x)
     if DATABASE_URL.startswith("postgres://"):
@@ -116,6 +117,7 @@ if DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 
 else:
+    print("No database url founf dksadjkadjskajdsakjdsla")
     # Fallback to SQLite (local or Fly volume)
     DATA_DIR = "/data"
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -350,22 +352,43 @@ def add_to_cart(product_id):
         return redirect(url_for("signup", next=request.path))
 
     product = Product.query.get_or_404(product_id)
+
+    # SAFE qty handling
+    try:
+        qty = int(request.args.get("qty", 1))
+        if qty < 1:
+            qty = 1
+    except ValueError:
+        qty = 1
+
+    # Clean color & size
+    color = request.args.get("color")
+    size = request.args.get("size")
+
+    color = color.strip() if color else None
+    size = size.strip() if size else None
+
     cart = get_cart()
     pid = str(product_id)
 
-    if pid in cart:
-        cart[pid]["quantity"] += 1
+    # Unique key per combination (important)
+    cart_key = f"{pid}_{color or 'none'}_{size or 'none'}"
+
+    if cart_key in cart:
+        cart[cart_key]["quantity"] += qty
     else:
-        cart[pid] = {
-            "quantity": 1,
+        cart[cart_key] = {
+            "product_id": product.id,
+            "quantity": qty,
             "price": float(product.price),
-            "name": product.name_en
+            "name": product.name_en,
+            "color": color,
+            "size": size
         }
 
     save_cart(cart)
     flash("Added to cart", "success")
     return redirect(request.referrer or url_for("home"))
-
 
 @app.route("/cart")
 def cart():
@@ -373,8 +396,11 @@ def cart():
     items = []
     total_usd = 0.0  # 🔑 ALWAYS USD
 
-    for pid, item in cart.items():
-        product = Product.query.get(int(pid))
+    for cart_key, item in cart.items():
+
+        product_id = item.get("product_id")
+        product = Product.query.get(product_id)
+
         if not product:
             continue
 
@@ -384,7 +410,10 @@ def cart():
         items.append({
             "product": product,
             "quantity": item["quantity"],
-            "subtotal_usd": subtotal_usd
+            "subtotal_usd": subtotal_usd,
+            "color": item.get("color"),
+            "size": item.get("size"),
+            "cart_key": cart_key  # important for remove/update
         })
 
     return render_template(
@@ -395,39 +424,36 @@ def cart():
 # =========================
 # CART ACTIONS
 # =========================
-@app.route("/cart/increase/<int:product_id>")
-def cart_increase(product_id):
+@app.route("/cart/increase/<cart_key>")
+def cart_increase(cart_key):
     cart = get_cart()
-    pid = str(product_id)
 
-    if pid in cart:
-        cart[pid]["quantity"] += 1
+    if cart_key in cart:
+        cart[cart_key]["quantity"] += 1
 
     save_cart(cart)
     return redirect(url_for("cart"))
 
 
-@app.route("/cart/decrease/<int:product_id>")
-def cart_decrease(product_id):
+@app.route("/cart/decrease/<cart_key>")
+def cart_decrease(cart_key):
     cart = get_cart()
-    pid = str(product_id)
 
-    if pid in cart:
-        cart[pid]["quantity"] -= 1
-        if cart[pid]["quantity"] <= 0:
-            del cart[pid]
+    if cart_key in cart:
+        cart[cart_key]["quantity"] -= 1
+        if cart[cart_key]["quantity"] <= 0:
+            del cart[cart_key]
 
     save_cart(cart)
     return redirect(url_for("cart"))
 
 
-@app.route("/cart/remove/<int:product_id>")
-def cart_remove(product_id):
+@app.route("/cart/remove/<cart_key>")
+def cart_remove(cart_key):
     cart = get_cart()
-    pid = str(product_id)
 
-    if pid in cart:
-        del cart[pid]
+    if cart_key in cart:
+        del cart[cart_key]
 
     save_cart(cart)
     return redirect(url_for("cart"))
@@ -446,8 +472,8 @@ def checkout():
     items = []
     total = 0
 
-    for pid, item in cart.items():
-        product = Product.query.get(int(pid))
+    for key, item in cart.items():
+        product = Product.query.get(item["product_id"])
         if not product:
             continue
 
@@ -457,6 +483,8 @@ def checkout():
         items.append({
             "product": product,
             "quantity": item["quantity"],
+            "color": item.get("color"),
+            "size": item.get("size"),
             "subtotal": subtotal
         })
 
@@ -478,14 +506,20 @@ def checkout():
                 order_id=order.id,
                 product_id=item["product"].id,
                 quantity=item["quantity"],
-                price=item["product"].price
+                price=item["product"].price,
+                color=item.get("color"),
+                size=item.get("size")
             ))
 
         db.session.commit()
         session.pop("cart", None)
 
         flash("Order placed successfully", "success")
-        return redirect(url_for("admin_orders") if current_user.role in ["admin", "superadmin"] else url_for("home"))
+        return redirect(
+            url_for("admin_orders")
+            if current_user.role in ["admin", "superadmin"]
+            else url_for("home")
+        )
 
     return render_template("checkout.html", items=items, total=total)
 
@@ -1216,48 +1250,76 @@ def add_product():
 
     return render_template("add_product.html", categories=categories)
 # =========================
+# CURRENCY CONFIG
+# =========================
+CURRENCIES = ["USD", "KES", "CDF", "EUR", "TZS", "UGX"]
+
+RATES = {
+    "USD": 1,
+    "KES": 126,
+    "CDF": 2300,
+    "EUR": 0.93,
+    "TZS": 2500,
+    "UGX": 3500
+}
+
+SYMBOLS = {
+    "USD": "$",
+    "KES": "KES ",
+    "CDF": "CDF ",
+    "EUR": "€",
+    "TZS": "TZS ",
+    "UGX": "UGX "
+}
+
+
+# =========================
 # SET CURRENCY
 # =========================
 @app.route("/set-currency/<currency>")
 def set_currency(currency):
+    currency = currency.upper()
+
     if currency in CURRENCIES:
         session["currency"] = currency
+
     return redirect(request.referrer or url_for("home"))
 
+
+# =========================
+# LOAD GLOBALS
+# =========================
 @app.before_request
-def load_currency():
-    g.currency = session.get("currency", "USD")  # ✅ DEFAULT USD
+def load_globals():
+    g.currency = session.get("currency", "USD")
 
 
+# =========================
+# TEMPLATE FILTER: PRODUCT MONEY
+# =========================
 @app.template_filter("money")
 def money(product):
-    amount = product.price
-    currency = product.currency
-
-    rates = {
-        "USD": 1,
-        "KES": 130,
-        "CDF": 2500,
-        "EUR": 0.93,
-        "TZS": 2700,
-        "UGX": 3700
-    }
+    if not product or not product.price:
+        return ""
 
     selected = getattr(g, "currency", "USD")
-    usd_price = amount / rates[currency]
-    converted = usd_price * rates[selected]
 
-    symbols = {
-        "USD": "$",
-        "KES": "KES ",
-        "CDF": "CDF ",
-        "EUR": "€",
-        "TZS": "TZS ",
-        "UGX": "UGX "
-    }
+    base_currency = product.currency.upper()
 
-    return f"{symbols[selected]}{converted:,.2f}"
+    # Convert product price → USD
+    usd_price = product.price / RATES.get(base_currency, 1)
 
+    # Convert USD → selected currency
+    converted = usd_price * RATES.get(selected, 1)
+
+    symbol = SYMBOLS.get(selected, "")
+
+    return f"{symbol}{converted:,.2f}"
+
+
+# =========================
+# TEMPLATE FILTER: RAW VALUE
+# =========================
 @app.template_filter("amount")
 def amount(value):
     if value is None:
@@ -1265,27 +1327,11 @@ def amount(value):
 
     selected = getattr(g, "currency", "USD")
 
-    rates = {
-        "USD": 1,
-        "KES": 130,
-        "CDF": 2500,
-        "EUR": 0.93,
-        "TZS": 2700,
-        "UGX": 3700
-    }
+    converted = value * RATES.get(selected, 1)
 
-    symbols = {
-        "USD": "$",
-        "KES": "KES ",
-        "CDF": "CDF ",
-        "EUR": "€",
-        "TZS": "TZS ",
-        "UGX": "UGX "
-    }
+    symbol = SYMBOLS.get(selected, "")
 
-    converted = value * rates[selected]  # ✅ MULTIPLY
-
-    return f"{symbols[selected]}{converted:,.0f}"
+    return f"{symbol}{converted:,.0f}"
 
 # =========================
 # UPLOAD FOLDERS (FLY VOLUME)

@@ -86,6 +86,8 @@ class Product(db.Model):
     currency = db.Column(db.String(10), default="USD")  # ✅ DEFAULT USD
     shop_name = db.Column(db.String(120), nullable=True)
     shop_location = db.Column(db.String(120), nullable=True)
+    colors = db.Column(db.String(500))   # example: "Red,Blue,Black"
+    sizes = db.Column(db.String(500))    # example: "S,M,L,XL"
     category_id = db.Column(
         db.Integer,
         db.ForeignKey("category.id"),
@@ -154,6 +156,7 @@ class Order(db.Model):
         nullable=False
     )
 
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     items = db.relationship(
@@ -183,7 +186,8 @@ class OrderItem(db.Model):
         db.ForeignKey("product.id"),
         nullable=False
     )
-
+    color = db.Column(db.String(50))
+    size = db.Column(db.String(50))
     quantity = db.Column(db.Integer, nullable=False, default=1)
     price = db.Column(db.Float, nullable=False)
 

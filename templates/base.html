@@ -611,6 +611,22 @@ function installPWA() {
   }
 }
 </script>
+
+<script>
+function switchTab(tabId, element) {
+
+  document.querySelectorAll(".tab-btn").forEach(btn =>
+    btn.classList.remove("active")
+  );
+
+  document.querySelectorAll(".tab-content").forEach(tab =>
+    tab.classList.remove("active")
+  );
+
+  element.classList.add("active");
+  document.getElementById(tabId).classList.add("active");
+}
+</script>
 </div>
 </body>
 </html>

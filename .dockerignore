@@ -1,3 +1,27 @@
-fly.toml
-.git/
+# Git
+.git
+.gitignore
+
+# Python
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Environment files
+.env
+
+# Database files
 *.sqlite3
+
+# Fly config (not needed inside image)
+fly.toml
+
+# Uploads (since you use Fly volume)
+uploads
+
+# OS junk
+.DS_Store
+Thumbs.db

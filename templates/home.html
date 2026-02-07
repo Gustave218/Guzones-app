@@ -53,265 +53,203 @@
 {% endif %}
 
 <!-- ===================== -->
-<!-- SHOP BY CATEGORY -->
+<!-- SHOP BY CATEGORY (SWIPE STYLE) -->
 <!-- ===================== -->
 
+<div class="category-wrapper">
 
-<div class="row row-cols-3 row-cols-md-5 g-3 g-md-4 mb-4">
-  {% for category in categories %}
-    <div class="col text-center">
+  <div class="category-scroll">
 
-      <a href="{{ url_for('products_by_category', category_id=category.id) }}"
-         class="category-card">
+    {% for category in categories %}
+    <a href="{{ url_for('products_by_category', category_id=category.id) }}"
+       class="category-item">
 
-        <div class="category-circle">
-          <span>{{ category.icon }}</span>
+        <div class="category-box">
+            <span class="category-icon">
+                {{ category.icon }}
+            </span>
         </div>
 
-        <div class="category-label">
-          {{ category.name_fr if g.lang == 'fr' else category.name_en }}
+        <div class="category-name">
+            {{ category.name_fr if g.lang == 'fr' else category.name_en }}
         </div>
 
-      </a>
+    </a>
+    {% endfor %}
 
-    </div>
-  {% endfor %}
+  </div>
+
 </div>
 
 <!-- ===================== -->
 <!-- NEW ARRIVALS -->
 <!-- ===================== -->
-<h4 class="mb-3">{{ t.new_arrivals }}</h4>
+<h4 class="section-title">{{ t.new_arrivals }}</h4>
 
-<div class="horizontal-wrapper scroll-container">
-  <button class="scroll-btn left scroll-left" onclick="scrollRow(this, -1)">❮</button>
-
+<div class="horizontal-wrapper">
   <div class="horizontal-scroll">
+
     {% for product in new_arrivals %}
-    {% set rating = (product.id % 3) + 3 %}
-    {% set reviews = (product.id * 13) % 240 + 12 %}
+    <div class="horizontal-card">
 
-      <div class="card horizontal-card product-card position-relative">
+      <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-link">
 
-        <!-- ❤️ Wishlist -->
-        <span class="wishlist-btn">♡</span>
+        <div class="image-wrapper">
 
-        <a href="{{ url_for('product_detail', product_id=product.id) }}"
-           class="text-decoration-none text-dark">
+          {% if product.images %}
+            {% set img = product.images[0].image %}
+            {% if img.startswith('http') %}
+              <img src="{{ img }}" loading="lazy" class="new-img">
+            {% else %}
+              <img src="{{ url_for('static', filename=img) }}" loading="lazy" class="new-img">
+            {% endif %}
+          {% else %}
+            <img src="{{ url_for('static', filename='images/placeholder.png') }}" loading="lazy" class="new-img">
+          {% endif %}
 
-          <div class="position-relative">
-            <span class="product-badge badge-new">{{ t.new }}</span>
+        </div>
 
-            {% if product.images %}
-  {% set img = product.images[0].image %}
-
-  {% if img.startswith('http') %}
-    <img src="{{ img }}" loading="lazy">
-  {% else %}
-    <img src="{{ url_for('static', filename=img) }}" loading="lazy">
-  {% endif %}
-
-{% else %}
-  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
-       loading="lazy">
-{% endif %}
+        <div class="product-info">
+          <div class="product-title one-line">
+            {{ product.name_fr if g.lang == 'fr' else product.name_en }}
           </div>
 
-          <div class="card-body p-2">
-
-            <!-- ⭐ Rating -->
-            <div class="rating">
-              {% for i in range(rating) %}★{% endfor %}
-              {% for i in range(5-rating) %}☆{% endfor %}
-              <span>({{ reviews }})</span>
-            </div>
-
-            <h6 class="product-title">
-              {{ product.name_fr if g.lang == 'fr' else product.name_en }}
-            </h6>
-
-            <strong class="text-danger">
-              {{ product | money }}
-            </strong>
-
+          <div class="product-price">
+            {{ product | money }}
           </div>
+        </div>
+
+      </a>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+
+<!-- ===================== -->
+<!-- PRODUCT TABS -->
+<!-- ===================== -->
+
+<div class="product-tabs">
+  <button class="tab-btn active" onclick="switchTab('for-you', this)">
+    For You
+  </button>
+  <button class="tab-btn" onclick="switchTab('trending', this)">
+    {{ t.trending }}
+  </button>
+  <button class="tab-btn" onclick="switchTab('sale', this)">
+    {{ t.on_sale }}
+  </button>
+</div>
+
+
+<!-- ===================== -->
+<!-- TAB CONTENT -->
+<!-- ===================== -->
+
+<!-- FOR YOU -->
+<div id="for-you" class="tab-content active">
+  <div class="for-you-grid">
+    {% for product in products %}
+      <div class="for-you-card">
+
+        <a href="{{ url_for('product_detail', product_id=product.id) }}" class="for-you-img-wrapper">
+          {% if product.images %}
+            {% set img = product.images[0].image %}
+            {% if img.startswith('http') %}
+              <img src="{{ img }}">
+            {% else %}
+              <img src="{{ url_for('static', filename=img) }}">
+            {% endif %}
+          {% else %}
+            <img src="{{ url_for('static', filename='images/placeholder.png') }}">
+          {% endif %}
         </a>
+
+        <div class="for-you-info">
+          <div class="for-you-title">
+            {{ product.name_fr if g.lang == 'fr' else product.name_en }}
+          </div>
+
+          <div class="for-you-price">
+            {{ product | money }}
+          </div>
+        </div>
+
       </div>
     {% endfor %}
   </div>
-
-  <button class="scroll-btn right scroll-right" onclick="scrollRow(this, 1)">❯</button>
 </div>
 
-<!-- ===================== -->
+
 <!-- TRENDING -->
-<!-- ===================== -->
-<h4 class="mb-3 mt-4">🔥 {{ t.trending }}</h4>
-
-<div class="horizontal-wrapper scroll-container">
-  <button class="scroll-btn left scroll-left" onclick="scrollRow(this, -1)">❮</button>
-
-  <div class="horizontal-scroll">
+<div id="trending" class="tab-content">
+  <div class="for-you-grid">
     {% for product in trending %}
-    {% set rating = (product.id % 3) + 3 %}
-    {% set reviews = (product.id * 13) % 240 + 12 %}
+      <div class="for-you-card">
 
-      <div class="card horizontal-card product-card position-relative">
-
-        <span class="wishlist-btn">♡</span>
-
-        <a href="{{ url_for('product_detail', product_id=product.id) }}"
-           class="text-decoration-none text-dark">
-
-          <div class="position-relative">
-            <span class="product-badge badge-trending">{{ t.trending }}</span>
-
-           {% if product.images %}
-  {% set img = product.images[0].image %}
-
-  {% if img.startswith('http') %}
-    <img src="{{ img }}" loading="lazy">
-  {% else %}
-    <img src="{{ url_for('static', filename=img) }}" loading="lazy">
-  {% endif %}
-
-{% else %}
-  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
-       loading="lazy">
-{% endif %}
-          </div>
-
-          <div class="card-body p-2">
-            <div class="rating">
-              {% for i in range(rating) %}★{% endfor %}
-              {% for i in range(5-rating) %}☆{% endfor %}
-              <span>({{ reviews }})</span>
-            </div>
-
-            <h6 class="product-title">
-              {{ product.name_fr if g.lang == 'fr' else product.name_en }}
-            </h6>
-
-            <strong class="text-danger">
-              {{ product | money }}
-            </strong>
-          </div>
+        <a href="{{ url_for('product_detail', product_id=product.id) }}" class="for-you-img-wrapper">
+          {% if product.images %}
+            {% set img = product.images[0].image %}
+            {% if img.startswith('http') %}
+              <img src="{{ img }}">
+            {% else %}
+              <img src="{{ url_for('static', filename=img) }}">
+            {% endif %}
+          {% else %}
+            <img src="{{ url_for('static', filename='images/placeholder.png') }}">
+          {% endif %}
         </a>
+
+        <div class="for-you-info">
+          <div class="for-you-title">
+            {{ product.name_fr if g.lang == 'fr' else product.name_en }}
+          </div>
+
+          <div class="for-you-price">
+            {{ product | money }}
+          </div>
+        </div>
+
       </div>
     {% endfor %}
   </div>
-
-  <button class="scroll-btn right scroll-right" onclick="scrollRow(this, 1)">❯</button>
 </div>
 
-<!-- ===================== -->
+
 <!-- ON SALE -->
-<!-- ===================== -->
-<h4 class="mb-3 mt-4 text-danger"> {{ t.on_sale }}</h4>
-
-<div class="horizontal-wrapper scroll-container">
-  <button class="scroll-btn left scroll-left" onclick="scrollRow(this, -1)">❮</button>
-
-  <div class="horizontal-scroll">
+<div id="sale" class="tab-content">
+  <div class="for-you-grid">
     {% for product in on_sale %}
-    {% set rating = (product.id % 3) + 3 %}
-    {% set reviews = (product.id * 13) % 240 + 12 %}
+      <div class="for-you-card">
 
-      <div class="card horizontal-card product-card position-relative">
-
-        <span class="wishlist-btn">♡</span>
-
-        <a href="{{ url_for('product_detail', product_id=product.id) }}"
-           class="text-decoration-none text-dark">
-
-          <div class="position-relative">
-            <span class="product-badge badge-sale">{{ t.on_sale }}</span>
-
-           {% if product.images %}
-  {% set img = product.images[0].image %}
-
-  {% if img.startswith('http') %}
-    <img src="{{ img }}" loading="lazy">
-  {% else %}
-    <img src="{{ url_for('static', filename=img) }}" loading="lazy">
-  {% endif %}
-
-{% else %}
-  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
-       loading="lazy">
-{% endif %}
-          </div>
-
-          <div class="card-body p-2">
-            <div class="rating">
-              {% for i in range(rating) %}★{% endfor %}
-              {% for i in range(5-rating) %}☆{% endfor %}
-              <span>({{ reviews }})</span>
-            </div>
-
-            <h6 class="product-title">
-              {{ product.name_fr if g.lang == 'fr' else product.name_en }}
-            </h6>
-
-            <strong class="text-danger">
-             {{ product | money }}
-            </strong>
-          </div>
+        <a href="{{ url_for('product_detail', product_id=product.id) }}" class="for-you-img-wrapper">
+          {% if product.images %}
+            {% set img = product.images[0].image %}
+            {% if img.startswith('http') %}
+              <img src="{{ img }}">
+            {% else %}
+              <img src="{{ url_for('static', filename=img) }}">
+            {% endif %}
+          {% else %}
+            <img src="{{ url_for('static', filename='images/placeholder.png') }}">
+          {% endif %}
         </a>
+
+        <div class="for-you-info">
+          <div class="for-you-title">
+            {{ product.name_fr if g.lang == 'fr' else product.name_en }}
+          </div>
+
+          <div class="for-you-price sale-price">
+            {{ product | money }}
+          </div>
+        </div>
+
       </div>
     {% endfor %}
   </div>
-
-  <button class="scroll-btn right scroll-right" onclick="scrollRow(this, 1)">❯</button>
-</div>
-
-<!-- ===================== -->
-<!-- FOR YOU (FEATURED GRID) -->
-<!-- ===================== -->
-<h3 class="mt-5 mb-4">{{ t.for_you }}</h3>
-
-<div class="row row-cols-2 row-cols-md-3 g-4">
-  {% for product in products %}
-  {% set rating = (product.id % 3) + 3 %}
-  {% set reviews = (product.id * 13) % 240 + 12 %}
-
-    <div class="col">
-  <div class="card h-100 product-card for-you-card position-relative">
-
-    <span class="wishlist-btn">♡</span>
-
-    <a href="{{ url_for('product_detail', product_id=product.id) }}"
-       class="text-decoration-none">
-
-      {% if product.images %}
-  {% set img = product.images[0].image %}
-
-  {% if img.startswith('http') %}
-    <img src="{{ img }}"
-         loading="lazy"
-         class="card-img-top for-you-img">
-  {% else %}
-    <img src="{{ url_for('static', filename=img) }}"
-         loading="lazy"
-         class="card-img-top for-you-img">
-  {% endif %}
-
-{% else %}
-  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
-       loading="lazy"
-       class="card-img-top for-you-img">
-{% endif %}
-
-      <!-- PRICE OVER IMAGE -->
-      <span class="for-you-price">
-        {{ product | money }}
-      </span>
-
-    </a>
-
-  </div>
-</div>
-  {% endfor %}
 </div>
 
 {% endblock %}

@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
+RUN pip install Flask-Login
 
 # Copy project files
 COPY . .
@@ -25,4 +26,4 @@ COPY . .
 EXPOSE 8080
 
 # Run Flask with Gunicorn (your original)
-CMD ["gunicorn", "app:app", "--worker-class", "eventlet", "--workers", "1", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "app:app", "--workers", "2", "--bind", "0.0.0.0:8080"]
